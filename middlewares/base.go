@@ -1,51 +1,23 @@
 package GMiddleware
 
 import (
+	"context"
 	"github.com/labstack/echo/v4"
-	"gotham/helpers"
-	"net/http"
+	"github.com/sarulabs/dingo/v4"
+	"gotham/app"
 )
 
-type MiddlewareI interface {
-	control(c echo.Context) (bool, error)
-}
-
-func Or(middleware []MiddlewareI) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			var msg = "You cannot access"
-
-			for _, m := range middleware {
-				canDo, err := m.control(c)
-				if err != nil {
-					msg = err.Error()
-				}
-				if canDo {
-					return next(c)
-				}
-			}
-
-			return c.JSON(http.StatusBadRequest, helpers.ErrorResponse(http.StatusBadRequest, msg))
+// For dependency injection container's request scope.
+func DicMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctn, err := app.Application.Container.SubContainer()
+		if err != nil {
+			panic(err)
 		}
-	}
-}
-
-func And(middleware []MiddlewareI) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			var msg = "You cannot access"
-
-			for _, m := range middleware {
-				canDo, err := m.control(c)
-				if err != nil {
-					msg = err.Error()
-				}
-				if !canDo {
-					return c.JSON(http.StatusBadRequest, helpers.ErrorResponse(http.StatusBadRequest, msg))
-				}
-			}
-
-			return next(c)
-		}
+		defer ctn.Delete()
+		ctx := context.WithValue(c.Request().Context(), dingo.ContainerKey("dingo"), ctn)
+		req := c.Request().WithContext(ctx)
+		c.SetRequest(req)
+		return next(c)
 	}
 }

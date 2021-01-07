@@ -39,7 +39,6 @@ func (UserController) Index(c echo.Context) (err error) {
 		Limit:       request.Limit,
 		Page:        request.Page,
 	}))
-
 }
 
 /**

@@ -1,11 +1,67 @@
 
 ![gotham](https://user-images.githubusercontent.com/39353278/103892416-99f6c880-50fc-11eb-8869-af197ca81fd1.png)
 
+## Repos and frameworks used
+
+- Dependency Injection Container ( https://github.com/sarulabs/dingo ) 
+- Handler ( https://echo.labstack.com )
+- ORM (https://gorm.io) 
 
 ## Table of contents
 ![GitHub](https://img.shields.io/github/license/tolgaOzen/go-gotham)
 ![GitHub top language](https://img.shields.io/github/languages/top/tolgaozen/go-gotham)
 ![GitHub last commit](https://img.shields.io/github/last-commit/tolgaozen/go-gotham)
+
+- [Basic usage](#basic-usage)
+- [Dic Container](#container-deletion)
+    * [Add New Service](#add-new-service)
+- [Helpers](#helpers)
+- [Middlewares](#conditional-middlewares)
+    * [Create](#create)
+    * [Conditional Middlewares](#conditional-middlewares)
+- [Features To Be Added Soon](#features-to-be-added-soon)
+
+
+## Middlewares
+
+### Create
+
+Creating a file in the middleware folder
+
+#### Example
+
+```go
+type Example struct{}
+
+func (e Example) control(c echo.Context) (bool bool, err error) {
+	if c.IsWebSocket() {
+		return true, nil
+	}
+	return false, errors.New("is it not webSocket")
+}
+```
+
+### Conditional Middlewares
+
+
+#### OR
+```go
+r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.Or([]GMiddleware.MiddlewareI{GMiddleware.IsAdmin{}, GMiddleware.IsVerified{}}))
+```
+
+Authenticated user must be admin or verified
+
+#### AND
+```go
+r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.And([]GMiddleware.MiddlewareI{GMiddleware.IsAdmin{}, GMiddleware.IsVerified{}}))
+```
+
+
+Authenticated user must be admin and verified
+
+## Features To Be Added Soon
+- Database seeder
+- Unit testing
 
 ## Author
 
