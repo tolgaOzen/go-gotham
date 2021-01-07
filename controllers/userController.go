@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"github.com/labstack/echo/v4"
-	"gotham/app"
+	"gotham/app/container/dic"
 	"gotham/helpers"
 	"gotham/models"
 	"gotham/models/accessories"
@@ -29,7 +29,7 @@ func (UserController) Index(c echo.Context) (err error) {
 
 	var users []models.User
 
-	if err := app.Application.Container.GetDb().Scopes(scopes.Paginate(request, models.User{}, "name")).Find(&users).Error; err != nil {
+	if err := dic.Db(c.Request()).Scopes(scopes.Paginate(request, models.User{}, "name")).Find(&users).Error; err != nil {
 		return echo.ErrInternalServerError
 	}
 
@@ -66,7 +66,7 @@ func (UserController) Show(c echo.Context) (err error) {
 
 	var user models.User
 
-	if err := app.Application.Container.GetDb().Where("verified = ?", request.Verified).First(&user, request.User).Error; err != nil {
+	if err := dic.Db(c.Request()).Where("verified = ?", request.Verified).First(&user, request.User).Error; err != nil {
 		return echo.ErrInternalServerError
 	}
 

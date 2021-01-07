@@ -13,7 +13,7 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 	return []di.Def{
 		{
 			Name:  "db",
-			Scope: "app",
+			Scope: "request",
 			Build: func(ctn di.Container) (interface{}, error) {
 				d, err := provider.Get("db")
 				if err != nil {
