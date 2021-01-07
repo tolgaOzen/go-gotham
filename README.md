@@ -3,9 +3,9 @@
 
 
 ## Table of contents
-![GitHub](https://img.shields.io/github/license/tolgaOzen/gotham)
-![GitHub top language](https://img.shields.io/github/languages/top/tolgaozen/gotham)
-![GitHub last commit](https://img.shields.io/github/last-commit/tolgaozen/gotham)
+![GitHub](https://img.shields.io/github/license/tolgaOzen/go-gotham)
+![GitHub top language](https://img.shields.io/github/languages/top/tolgaozen/go-gotham)
+![GitHub last commit](https://img.shields.io/github/last-commit/tolgaozen/go-gotham)
 
 ## Author
 
