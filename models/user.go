@@ -3,7 +3,6 @@ package models
 import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"gotham/app"
 	"time"
 )
 
@@ -33,35 +32,6 @@ func (u *User) VerifyPassword(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	return err == nil
 }
-
-
-/**
- * Create
- *
- * @return *gorm.DB
- */
-func (u *User) Create() *gorm.DB {
-	return app.Application.Container.GetDb().Create(&u)
-}
-
-/**
- * Save
- *
- * @return *gorm.DB
- */
-func (u *User) Save() *gorm.DB {
-	return app.Application.Container.GetDb().Save(&u)
-}
-
-/**
- * Delete
- *
- * @return string, error
- */
-func (u *User) Delete() *gorm.DB {
-	return app.Application.Container.GetDb().Delete(&u)
-}
-
 
 /**
  * IsVerified
