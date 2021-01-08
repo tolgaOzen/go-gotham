@@ -5,7 +5,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation"
 )
 
-func stringEquals(str string) validation.RuleFunc {
+func StringEquals(str string) validation.RuleFunc {
 	return func(value interface{}) error {
 		s, _ := value.(string)
 		if s != str {
