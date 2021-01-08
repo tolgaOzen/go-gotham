@@ -2,7 +2,7 @@ package providers
 
 import (
 	"github.com/sarulabs/dingo/v4"
-	"gotham/services"
+	"gotham/app/defs"
 )
 
 type Provider struct {
@@ -10,17 +10,9 @@ type Provider struct {
 }
 
 func (p *Provider) Load() error {
-	if err := p.AddDefSlice(services.DatabaseServiceDefs); err != nil {
+	if err := p.AddDefSlice(defs.DatabaseServiceDefs); err != nil {
 		return err
 	}
-
-	// add providers
-
-	//if err := p.AddDefSlice(services.ExampleServiceDefs); err != nil {
-	//	return err
-	//}
-
-
 	return nil
 }
 
