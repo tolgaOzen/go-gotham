@@ -27,6 +27,9 @@ func (UserController) Index(c echo.Context) (err error) {
 		return
 	}
 
+	var count int64
+	dic.Db(c.Request()).Model(&models.User{}).Count(&count)
+
 	var users []models.User
 
 	if err := dic.Db(c.Request()).Scopes(scopes.Paginate(request, models.User{}, "name")).Find(&users).Error; err != nil {
@@ -34,7 +37,7 @@ func (UserController) Index(c echo.Context) (err error) {
 	}
 
 	return c.JSON(http.StatusOK, helpers.SuccessResponse(accessories.Paginator{
-		TotalRecord: 0,
+		TotalRecord: int(count),
 		Records:     users,
 		Limit:       request.Limit,
 		Page:        request.Page,
