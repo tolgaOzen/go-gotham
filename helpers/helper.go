@@ -72,21 +72,6 @@ func InArray(val interface{}, array interface{}) (exists bool) {
 	return
 }
 
-func InArrayDuplicate(val interface{}, array interface{}) (number int) {
-	number = 0
-	switch reflect.TypeOf(array).Kind() {
-	case reflect.Slice:
-		s := reflect.ValueOf(array)
-		for i := 0; i < s.Len(); i++ {
-			if reflect.DeepEqual(val, s.Index(i).Interface()) == true {
-				number++
-			}
-		}
-
-	}
-	return
-}
-
 func TagControl(tag, key string, s interface{}, defaultV string) (d string) {
 
 	d = defaultV
@@ -107,22 +92,6 @@ func TagControl(tag, key string, s interface{}, defaultV string) (d string) {
 	}
 
 	return
-}
-
-func ScoreCalculate(likeCount float32, dislikeCount float32) float32 {
-	return 5 + (likeCount-dislikeCount)*5/(likeCount+dislikeCount+1)
-}
-
-func ScoreCalculateWithShare(likeCount float32, dislikeCount float32, share float32) float32 {
-	likeCount += 5 * share
-	return 5 + (likeCount-dislikeCount)*5/(likeCount+dislikeCount+1)
-}
-
-func PercentCalculate(share int, denominator int) int {
-	if denominator == 0 {
-		denominator = 1
-	}
-	return int((100 * share) / denominator)
 }
 
 func RemoveDuplicateValues(intSlice []uint) []uint {
@@ -150,60 +119,4 @@ func ClearNonAlphanumericalCharacters(val string) (string, error) {
 		return "",err
 	}
 	return reg.ReplaceAllString(val, "") , nil
-}
-
-
-type MonthlyEnum string
-
-const (
-	January   MonthlyEnum = "January"
-	February  MonthlyEnum = "February"
-	March     MonthlyEnum = "March"
-	April     MonthlyEnum = "April"
-	May       MonthlyEnum = "May"
-	June      MonthlyEnum = "June"
-	July      MonthlyEnum = "July"
-	August    MonthlyEnum = "August"
-	September MonthlyEnum = "September"
-	October   MonthlyEnum = "October"
-	November  MonthlyEnum = "November"
-	December  MonthlyEnum = "December"
-)
-
-type MonthlyInformation struct {
-	Month    MonthlyEnum
-	FullName string
-	MouthID  int
-}
-
-func (m MonthlyEnum) GetMonthFullName() string {
-	return Months[m].FullName
-}
-
-func (m MonthlyEnum) GetMonthId() int {
-	return Months[m].MouthID
-}
-
-func GetMonthNameWithId(id int) string {
-	for _, m  := range Months {
-		if m.MouthID == id {
-			return m.FullName
-		}
-	}
-	return ""
-}
-
-var Months = map[MonthlyEnum]MonthlyInformation{
-	January:   {Month: January, FullName: "January", MouthID: 1},
-	February:  {Month: February, FullName: "February", MouthID: 2},
-	March:     {Month: March, FullName: "March", MouthID: 3},
-	April:     {Month: April, FullName: "April", MouthID: 4},
-	May:       {Month: May, FullName: "May", MouthID: 5},
-	June:      {Month: June, FullName: "June", MouthID: 6},
-	July:      {Month: July, FullName: "July", MouthID: 7},
-	August:    {Month: August, FullName: "August", MouthID: 8},
-	September: {Month: September, FullName: "September", MouthID: 9},
-	October:   {Month: October, FullName: "October", MouthID: 10},
-	November:  {Month: November, FullName: "November", MouthID: 11},
-	December:  {Month: December, FullName: "December", MouthID: 12},
 }
