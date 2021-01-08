@@ -315,20 +315,20 @@ func IsVerified(next echo.HandlerFunc) echo.HandlerFunc {
         u := c.Get("user").(*jwt.Token)
         claims := u.Claims.(*config.JwtCustomClaims)
 
-		user := models.User{}
-		if err := app.Application.DB.First(&user, claims.Id).Error; err != nil {
-            if errors.Is(err, gorm.ErrRecordNotFound) {
-                   return false, echo.ErrUnauthorized
+        user := models.User{}
+        if err := app.Application.DB.First(&user, claims.Id).Error; err != nil {
+             if errors.Is(err, gorm.ErrRecordNotFound) {
+                 return false, echo.ErrUnauthorized
              }
-			return c.JSON(echo.ErrInternalServerError, err)
-		}
+            return c.JSON(echo.ErrInternalServerError, err)
+        }
 
-		if user.IsVerified() {
-			return next(c)
-		}
+         if user.IsVerified() {
+            return next(c)
+         }
 
-		return c.JSON(http.StatusBadRequest, helpers.ErrorResponse(http.StatusBadRequest, "your email not verified"))
-	}
+         return c.JSON(http.StatusBadRequest, helpers.ErrorResponse(http.StatusBadRequest, "your email not verified"))
+    }
 }
 ```
 
