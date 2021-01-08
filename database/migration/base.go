@@ -6,5 +6,9 @@ import (
 )
 
 func Initialize() {
-	_ = app.Application.Container.GetDb().AutoMigrate(&models.User{})
+	db := app.Application.Container.UnscopedGetDb()
+
+	_ = db.AutoMigrate(&models.User{})
+
+	app.Application.Container.Clean()
 }

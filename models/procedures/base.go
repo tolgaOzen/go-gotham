@@ -1,24 +1,33 @@
 package procedures
 
-type ProcedureInterface interface {
-	drop() error
-	dropIfExist() error
-	create() error
+import (
+	"gorm.io/gorm"
+	"gotham/app"
+)
+
+type ProcedureI interface {
+	drop(db *gorm.DB) error
+	dropIfExist(db *gorm.DB) error
+	create(db *gorm.DB) error
 }
 
-func CreateProcedure(p ProcedureInterface) error {
-	return p.create()
+func CreateProcedure(p ProcedureI, db *gorm.DB) error {
+	return p.create(db)
 }
 
-func DropProcedure(p ProcedureInterface) error {
-	return p.drop()
+func DropProcedure(p ProcedureI, db *gorm.DB) error {
+	return p.drop(db)
 }
 
-func DropProcedureIfExist(p ProcedureInterface) error {
-	return p.dropIfExist()
+func DropProcedureIfExist(p ProcedureI, db *gorm.DB) error {
+	return p.dropIfExist(db)
 }
 
 func Initialize() {
-	_ = DropProcedureIfExist(GetUsersCount{})
-	_ = CreateProcedure(GetUsersCount{})
+	db := app.Application.Container.UnscopedGetDb()
+
+	_ = DropProcedureIfExist(UserCount{}, db)
+	_ = CreateProcedure(UserCount{}, db)
+
+	app.Application.Container.Clean()
 }

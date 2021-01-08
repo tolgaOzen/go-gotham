@@ -1,33 +1,34 @@
 package procedures
 
-type GetUsersCount struct {
+import (
+	"gorm.io/gorm"
+)
+
+type UserCount struct {
 	Count int  `json:"rate"`
 }
 
-func (GetUsersCount) create() error {
-	//sql := `CREATE PROCEDURE GetUsersCount()
-	//BEGIN
-	//  SELECT SUM(followers_count) as followers FROM modules where modules.status = 1;
-	//END`
-	//return app.Application.DB.Exec(sql).Error
-	return nil
+func (UserCount) create(db *gorm.DB) error {
+	sql := `CREATE PROCEDURE GetUsersCount()
+	BEGIN
+	 SELECT COUNT(*) as count FROM users;
+	END`
+	return db.Exec(sql).Error
 }
 
-func (GetUsersCount) drop() error {
-	//sql := `DROP PROCEDURE GetUsersCount;`
-	//return app.Application.DB.Exec(sql).Error
-	return nil
+func (UserCount) drop(db *gorm.DB) error {
+	sql := `DROP PROCEDURE GetUserCount;`
+	return db.Exec(sql).Error
 }
 
-func (GetUsersCount) dropIfExist() error {
-	//sql := `DROP PROCEDURE IF EXISTS GetUsersCount;`
-	//return app.Application.DB.Exec(sql).Error
-	return nil
+func (UserCount) dropIfExist(db *gorm.DB) error {
+	sql := `DROP PROCEDURE IF EXISTS GetUserCount;`
+	return db.Exec(sql).Error
 }
 
-func GetSumModulesFollowersCount() GetUsersCount {
-	var returnVal GetUsersCount
-	//app.Application.DB.Raw("CALL GetSumModulesFollowersCount()").Scan(&returnVal)
+func GetUserCount(db *gorm.DB) UserCount {
+	var returnVal UserCount
+	db.Raw("CALL GetUserCount()").Scan(&returnVal)
 	return returnVal
 }
 
