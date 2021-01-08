@@ -28,16 +28,14 @@
 - [ORM](#orm)
 - [Requests](#requests)
     * [Create Requests](#create-new-requests)
-    * [Bind Requests](#bind-requests)
-    * [Validations](#validations)
-    * [Rules](#rules)
+    * [Bind Request And Validate](#bind-request-and-validate)
+    * [More Info For Validations Rules](#more-info-for-validations-rules)
+    * [Custom Rules](#custom-rules)
 - [Routes](#routes)
 - [Auth](#auth)
-  * [JWT](#jwt)
+    * [JWT](#jwt)
 - [Controllers](#controllers)
 - [Jobs](#jobs)
-- [Helpers](#helpers)
-    * [Response](#response)
 - [Middlewares](#conditional-middlewares)
     * [Create](#create)
     * [Conditional Middlewares](#conditional-middlewares)
@@ -58,7 +56,6 @@ You can start using this repository by cloning it.
 ### Services
 
 ### Defs
-
 
 
 
@@ -129,7 +126,7 @@ func Initialize() {
 
 ### Db Scopes
 
-#### Pagination
+#### Pagination Scope
 
 In Controller Usage
 
@@ -176,6 +173,24 @@ In Controller Usage
  }
 ```
 
+### Migrations
+
+When you create a model, insert it into the Initialize() function of the database/migration/base.go.
+
+#### Register Migration
+
+models/procedures/base.go
+
+#### Example
+```go
+func Initialize() {
+    db := app.Application.Container.UnscopedGetDb()
+
+    _ = db.AutoMigrate(&models.User{})
+    
+    app.Application.Container.Clean()
+}
+```
 
 ## ORM
 Check out fantastic gorm library https://gorm.io/docs/
@@ -189,7 +204,7 @@ Creating a file in the requests folder,
 create a type and create a Validate() method for that type.
 You can look at the examples below
 
-### Bind Request And validate
+### Bind Request And Validate
 
 #### Example
 
@@ -235,18 +250,18 @@ if v != nil {
 fmt.println(request.Email)
 ```
 
-### More Info for validations
+### More Info For Validations Rules
 
 Check out ozzo-validation library https://github.com/go-ozzo/ozzo-validation
 
-### Rules
-
-You can create custom rules according to your awesome project
+### Custom Rules
 
 #### Examples
 
+rules/stringEquals.go
+
 ```go
-func stringEquals(str string) validation.RuleFunc {
+func StringEquals(str string) validation.RuleFunc {
     return func(value interface{}) error {
         s, _ := value.(string)
             
@@ -259,6 +274,15 @@ func stringEquals(str string) validation.RuleFunc {
 }
 ```
 
+#### Usage In Any Request Object Validate Method
+
+```go
+func (r ExampleRequest) Validate() error {
+    return validation.ValidateStruct(&r,
+        validation.Field(&r.Name, validation.By(rules.StringEquals("john"))),
+    )
+}
+```
 
 ## Routes
 
