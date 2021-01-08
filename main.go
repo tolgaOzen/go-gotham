@@ -26,4 +26,5 @@ func main() {
 	//migrations.Initialize()
 
 	routers.Route(echo.New())
+	defer app.Application.Container.Delete()
 }
