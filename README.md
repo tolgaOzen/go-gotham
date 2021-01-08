@@ -14,15 +14,17 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/tolgaozen/go-gotham)
 ![GitHub last commit](https://img.shields.io/github/last-commit/tolgaozen/go-gotham)
 
-- [Basic Usage](#basic-usage)
-- [Di Container](#di-container)
+- [Architecture](#architecture)
+    * [Di Container](#di-container)
     * [Providers](#providers)
+    * [Defs](#defs)
+    * [Services](#services)
     * [Di Scopes](#di-scopes)
-    * [Add New Service](#add-new-service)
 - [Database](#database)
     * [Supported Databases](#supported-databases)
-    * [Transactions](#transactions)
+    * [Procedures](#procedures)
     * [Db Scopes](#db-scopes)
+    * [Migrations](#migrations)
 - [ORM](#orm)
 - [Requests](#requests)
     * [Create Requests](#create-new-requests)
@@ -30,6 +32,8 @@
     * [Validations](#validations)
     * [Rules](#rules)
 - [Routes](#routes)
+- [Auth](#auth)
+  * [JWT](#jwt)
 - [Controllers](#controllers)
 - [Jobs](#jobs)
 - [Helpers](#helpers)
@@ -39,7 +43,10 @@
     * [Conditional Middlewares](#conditional-middlewares)
 - [Features To Be Added Soon](#features-to-be-added-soon)
 
-## Basic Usage
+## Setup
+You can start using this repository by cloning it.
+
+## Architecture
 
 
 ## Di Container
@@ -48,29 +55,210 @@
 
 ### Di Scopes
 
-### Add New Service
+### Services
+
+### Defs
+
+
 
 
 ## Database
 
 ### Supported Databases
 
-### Transactions
+supports databases MySQL and PostgreSQL
+
+### Procedures
+
+Creating a file in the models/procedures folder,
+create a type and create(db *gorm.DB), drop(db *gorm.DB), dropIfExist(db *gorm.DB) methods for that type.
+create getter function for this procedure
+
+You can look at the example below
+
+#### Example
+
+models/procedures/getUsersCount.go
+```go
+type UserCount struct {
+    Count int  `json:"rate"`
+}
+
+func (UserCount) create(db *gorm.DB) error {
+    sql := `CREATE PROCEDURE GetUsersCount()
+    BEGIN
+      SELECT COUNT(*) as count FROM users;
+    END`
+    
+    return db.Exec(sql).Error
+}
+
+func (UserCount) drop(db *gorm.DB) error {
+    sql := `DROP PROCEDURE GetUserCount;`
+    return db.Exec(sql).Error
+}
+
+func (UserCount) dropIfExist(db *gorm.DB) error {
+    sql := `DROP PROCEDURE IF EXISTS GetUserCount;`
+    return db.Exec(sql).Error
+}
+
+func GetUserCount(db *gorm.DB) UserCount {
+    var returnVal UserCount
+    db.Raw("CALL GetUserCount()").Scan(&returnVal)
+    return returnVal
+}
+```
+
+#### Register Procedure
+
+models/procedures/base.go
+
+```go
+func Initialize() {
+    db := app.Application.Container.UnscopedGetDb()
+
+    // UserCount Register
+    _ = DropProcedureIfExist(UserCount{}, db)
+    _ = CreateProcedure(UserCount{}, db)
+
+
+    app.Application.Container.Clean()
+}
+```
 
 ### Db Scopes
 
+#### Pagination
+
+In Controller Usage
+
+```go
+request := new(requests.Pagination)
+
+if err = c.Bind(request); err != nil {
+   return
+}
+
+var users []models.User
+
+if err := dic.Db(c.Request()).Scopes(scopes.Paginate(request, models.User{}, "name")).Find(&users).Error; err != nil {
+   return echo.ErrInternalServerError
+}
+```
+
+You can add pagination to any request object
+```go
+type UserShowRequest struct {
+    validation.Validatable `json:"-" form:"-" query:"-"`
+
+    /**
+     * PAGINATION
+     */
+    Pagination Pagination
+    
+    /**
+    * PATH
+    */
+    User int `query:"user"`
+
+    /**
+    * BODY
+    */
+    Verified int `json:"verified" form:"verified" query:"verified"`
+}
+```
+
+In Controller Usage
+```go
+ if err := dic.Db(c.Request()).Scopes(scopes.Paginate(&request.Pagination, models.User{}, "name")).Find(&users).Error; err != nil {
+   return echo.ErrInternalServerError
+ }
+```
+
 
 ## ORM
+Check out fantastic gorm library https://gorm.io/docs/
+
 
 ## Requests
 
 ### Create New Requests
 
-### Bind Requests
+Creating a file in the requests folder,
+create a type and create a Validate() method for that type.
+You can look at the examples below
 
-### Validations
+### Bind Request And validate
+
+#### Example
+
+Request Object
+
+```go
+type LoginRequest struct {
+    validation.Validatable `json:"-" form:"-" query:"-"`
+ 
+    /**
+    * BODY
+    */
+     Email    string `json:"email" form:"email" query:"email"`
+     Password string `json:"password" form:"password" query:"password"`
+}
+
+func (r LoginRequest) Validate() error {
+    return validation.ValidateStruct(&r,
+        validation.Field(&r.Email, validation.Required, validation.Length(4, 50), is.Email),
+        validation.Field(&r.Password, validation.Required, validation.Length(8, 50)),
+    )
+}
+```
+
+In Controller Usage
+
+```go
+request := new(requests.LoginRequest)
+
+if err = c.Bind(request); err != nil {
+	return
+}
+
+v := request.Validate()
+
+if v != nil {
+	return c.JSON(http.StatusUnprocessableEntity, map[string]interface{}{
+		"errors": v,
+	})
+}
+	
+// you can access binded request object
+fmt.println(request.Email)
+```
+
+### More Info for validations
+
+Check out ozzo-validation library https://github.com/go-ozzo/ozzo-validation
 
 ### Rules
+
+You can create custom rules according to your awesome project
+
+#### Examples
+
+```go
+func stringEquals(str string) validation.RuleFunc {
+    return func(value interface{}) error {
+        s, _ := value.(string)
+            
+        if s != str {
+             return errors.New("unexpected string")
+        }
+            
+        return nil
+    }
+}
+```
+
 
 ## Routes
 
@@ -80,6 +268,11 @@
 ## Jobs
 
 ## Helpers
+
+
+
+
+
 
 ## Middlewares
 
@@ -93,10 +286,11 @@ Creating a file in the middleware folder
 type Example struct{}
 
 func (e Example) control(c echo.Context) (bool bool, err error) {
-if c.IsWebSocket() {
-return true, nil
-}
-return false, errors.New("is it not webSocket")
+    if c.IsWebSocket() {
+        return true, nil
+    }
+    
+    return false, errors.New("is it not webSocket")
 }
 ```
 
