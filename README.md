@@ -130,6 +130,7 @@ func Initialize() {
 
 In Controller Usage
 
+controllers/userController.go index method
 ```go
 request := new(requests.Pagination)
 
@@ -137,28 +138,33 @@ if err = c.Bind(request); err != nil {
    return
 }
 
+var count int64
+dic.Db(c.Request()).Model(&models.User{}).Count(&count)
+
 var users []models.User
 
 if err := dic.Db(c.Request()).Scopes(scopes.Paginate(request, models.User{}, "name")).Find(&users).Error; err != nil {
    return echo.ErrInternalServerError
 }
+
+return c.JSON(http.StatusOK, helpers.SuccessResponse(accessories.Paginator{
+    TotalRecord: int(count),
+    Records:     users,
+    Limit:       request.Limit,
+    Page:        request.Page,
+}))
 ```
 
 You can add pagination to any request object
 ```go
-type UserShowRequest struct {
+type ExampleRequest struct {
     validation.Validatable `json:"-" form:"-" query:"-"`
 
     /**
      * PAGINATION
      */
     Pagination Pagination
-    
-    /**
-    * PATH
-    */
-    User int `query:"user"`
-
+  
     /**
     * BODY
     */
@@ -169,7 +175,7 @@ type UserShowRequest struct {
 In Controller Usage
 ```go
  if err := dic.Db(c.Request()).Scopes(scopes.Paginate(&request.Pagination, models.User{}, "name")).Find(&users).Error; err != nil {
-   return echo.ErrInternalServerError
+     return echo.ErrInternalServerError
  }
 ```
 
@@ -241,9 +247,9 @@ if err = c.Bind(request); err != nil {
 v := request.Validate()
 
 if v != nil {
-	return c.JSON(http.StatusUnprocessableEntity, map[string]interface{}{
-		"errors": v,
-	})
+    return c.JSON(http.StatusUnprocessableEntity, map[string]interface{}{
+         "errors": v,
+    })
 }
 	
 // you can access binded request object
@@ -291,7 +297,6 @@ func (r ExampleRequest) Validate() error {
 
 ## Jobs
 
-## Helpers
 
 
 
