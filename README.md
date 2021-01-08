@@ -316,7 +316,7 @@ func IsVerified(next echo.HandlerFunc) echo.HandlerFunc {
         claims := u.Claims.(*config.JwtCustomClaims)
 
         user := models.User{}
-        if err := app.Application.DB.First(&user, claims.Id).Error; err != nil {
+        if err := dic.Db(c.Request()).First(&user, claims.Id).Error; err != nil {
              if errors.Is(err, gorm.ErrRecordNotFound) {
                  return false, echo.ErrUnauthorized
              }
