@@ -2,7 +2,7 @@
 
 ## Repos and frameworks used
 
-- Dependency Injection Container ( https://github.com/sarulabs/dingo )
+- Dependency Injection Container ( https://github.com/sarulabs/di )
 - Handler ( https://echo.labstack.com )
 - ORM (https://gorm.io)
 - Validation (https://github.com/go-ozzo/ozzo-validation)
@@ -301,29 +301,97 @@ func (r ExampleRequest) Validate() error {
 
 
 
-
-
 ## Middlewares
 
 ### Create
 
 Creating a file in the middleware folder
 
-#### Example
+#### Examples
 
 ```go
-type Example struct{}
+func IsVerified(next echo.HandlerFunc) echo.HandlerFunc {
+    return func(c echo.Context) error {
+        u := c.Get("user").(*jwt.Token)
+        claims := u.Claims.(*config.JwtCustomClaims)
 
-func (e Example) control(c echo.Context) (bool bool, err error) {
-    if c.IsWebSocket() {
-        return true, nil
-    }
-    
-    return false, errors.New("is it not webSocket")
+		user := models.User{}
+		if err := app.Application.DB.First(&user, claims.Id).Error; err != nil {
+            if errors.Is(err, gorm.ErrRecordNotFound) {
+                   return false, echo.ErrUnauthorized
+             }
+			return c.JSON(echo.ErrInternalServerError, err)
+		}
+
+		if user.IsVerified() {
+			return next(c)
+		}
+
+		return c.JSON(http.StatusBadRequest, helpers.ErrorResponse(http.StatusBadRequest, "your email not verified"))
+	}
 }
 ```
 
+```go
+    r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.IsVerified, GMiddleware.IsAdmin)
+```
+
+
 ### Conditional Middlewares
+
+#### Examples
+
+/middlewares/isAdmin.go
+
+```go
+type IsAdmin struct {}
+
+func (i IsAdmin) control(c echo.Context) (bool bool, err error) {
+    u := c.Get("user").(*jwt.Token)
+    claims := u.Claims.(*config.JwtCustomClaims)
+
+    user := models.User{}
+    
+    if err := dic.Db(c.Request()).First(&user, claims.Id).Error; err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return false, echo.ErrUnauthorized
+        }
+    
+        return false, echo.ErrInternalServerError
+    }
+
+    if user.IsAdmin() {
+        return true, nil
+    }
+
+    return false, errors.New("you are not admin")
+}
+
+```
+
+/middlewares/isVerified.go
+```go
+type IsVerified struct{}
+
+func (i IsVerified) control(c echo.Context) (bool bool, err error) {
+    u := c.Get("user").(*jwt.Token)
+    claims := u.Claims.(*config.JwtCustomClaims)
+
+    user := models.User{}
+    if err := dic.Db(c.Request()).First(&user, claims.Id).Error; err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return false, echo.ErrNotFound
+        }
+        return false, echo.ErrInternalServerError
+    }
+
+    if user.IsVerified() {
+        return true, nil
+    }
+
+    return false, errors.New("your email not verified")
+}
+```
 
 #### OR
 
