@@ -118,7 +118,7 @@ func (p Postgres) open() (dia gorm.Dialector) {
 
 You will have to write the service definitions and register them in a Provider.
 
-/app/provider/appServiceProvider.go
+app/provider/appServiceProvider.go
 ```go
 func (p *Provider) Load() error {
   
@@ -247,7 +247,7 @@ e.GET("/status/ping", controllers.ServerController{}.Ping)
 
 Creating a file in the middleware folder
 
-### Examples
+### Example
 
 ```go
 func IsVerified(next echo.HandlerFunc) echo.HandlerFunc {
@@ -278,7 +278,7 @@ r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.IsVerified,
 
 ### Conditional Middlewares
 
-#### Examples
+#### Example
 
 /middlewares/isAdmin.go
 
@@ -552,7 +552,7 @@ Check out ozzo-validation library https://github.com/go-ozzo/ozzo-validation
 
 ### Custom Rules
 
-#### Examples
+#### Example
 
 rules/stringEquals.go
 
@@ -598,7 +598,7 @@ type JwtCustomClaims struct {
 
 #### Middleware
 
-/routers/api.go
+routers/api.go
 ```go
 r := e.Group("/restricted")
 
@@ -612,7 +612,7 @@ r.Use(middleware.JWTWithConfig(c))
 
 #### LoginController
 
-/controllers/loginController.go
+controllers/loginController.go
 ```go
 exp := time.Now().Add(time.Minute * 15).Unix()
 
