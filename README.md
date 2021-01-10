@@ -138,7 +138,7 @@ func (p *Provider) Load() error {
 }
 ```
 
-### Defs
+## Defs
 
 A Definitions consists of parts where we write the dependencies required to create the object and where we can determine the life cycles of objects.
 
@@ -173,16 +173,16 @@ var DatabaseServiceDefs = []dingo.Def{
 
 Like the example above, the db object is dependent on the dp-pool object. While calling the db object, the db-pool object is injected into the db object, and the  db object is created.
 
-### Di Scopes
+## Di Scopes
 Scopes allow us to control the life cycle of the created objects.
 
 
-#### App Scope
+### App Scope
 App scope is the widest scope. It is created once during the application's run time.
 
 The db-pool object in the example above is an example.
 
-#### Request Scope
+### Request Scope
 The request scope is a sub-scope. Container can generate children in the next scope thanks to the SubContainer method.
 
 The container creates a subcontainer and adds the request context via DicSubContainerSetterMiddleware.
@@ -197,7 +197,7 @@ dic.Db(c.Request())
 When the request is finished, request scope objects are cleaned from the container.
 
 
-#### Unscoped
+### Unscoped
 
 app can retrieve a request-object with unscoped methods.
 
@@ -213,7 +213,7 @@ app.Application.Container.Clean()
 Once the objects created with unscoped methods are no longer used,
 you can call the Clean method. In this case, the Close function will be called on the object.
 
-### Controllers
+## Controllers
 
 #### Create
 
@@ -221,31 +221,39 @@ Creating a file in the controllers folder
 
 #### Examples
 
+controllers/serverController.go
 ```go
-func IsVerified(next echo.HandlerFunc) echo.HandlerFunc {
-    return func (c echo.Context) error {
-        u := c.Get("user").(*jwt.Token)
-        claims := u.Claims.(*config.JwtCustomClaims)
+type ServerController struct{}
 
-        user := models.User{}
-        if err := dic.Db(c.Request()).First(&user, claims.Id).Error; err != nil {
-            if errors.Is(err, gorm.ErrRecordNotFound) {
-                return false, echo.ErrUnauthorized
-            }
-           return c.JSON(echo.ErrInternalServerError, err)
-        }
-
-        if user.IsVerified() {
-            return next(c)
-        }
-
-        return c.JSON(http.StatusBadRequest, helpers.ErrorResponse(http.StatusBadRequest, "your email not verified"))
-    }
+/**
+ * Ping
+ *
+ * @param echo.Context
+ * @return error
+ */
+func (ServerController) Ping(c echo.Context) (err error) {
+    return c.JSON(http.StatusOK, helpers.MResponse(200 , "pong"))
 }
 ```
 
+routes/api.go
 ```go
-r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.IsVerified, GMiddleware.IsAdmin)
+type ServerController struct{}
+
+/**
+ * Ping
+ *
+ * @param echo.Context
+ * @return error
+ */
+func (ServerController) Ping(c echo.Context) (err error) {
+    return c.JSON(http.StatusOK, helpers.MResponse(200 , "pong"))
+}
+```
+
+
+```go
+r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.Or([]GMiddleware.MiddlewareI{GMiddleware.IsAdmin{}, GMiddleware.IsVerified{}}))
 ```
 
 ## Middlewares
