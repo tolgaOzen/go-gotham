@@ -14,19 +14,17 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/tolgaozen/go-gotham)
 ![GitHub last commit](https://img.shields.io/github/last-commit/tolgaozen/go-gotham)
 
-- [Architecture](#architecture)
-    * [Di Container](#di-container)
-    * [Services](#services)
-    * [Provider](#provider)
-    * [Defs](#defs)
-    - [Di Scopes](#di-scopes)
+- [Di Container](#di-container)
+- [Services](#services)
+- [Provider](#provider)
+- [Defs](#defs)
+- [Di Scopes](#di-scopes)
         * [App Scope](#app-scope)
         * [Request Scope](#request-scope)
         * [Unscoped](#unscoped)
-    * [Controllers](#controllers)
-    - [Middlewares](#conditional-middlewares):
-        * [Create](#create)
-        * [Conditional Middlewares](#conditional-middlewares)
+- [Controllers](#controllers)
+- [Middlewares](#conditional-middlewares):
+    * [Conditional Middlewares](#conditional-middlewares)
 - [Database](#database)
     * [Supported Databases](#supported-databases)
     * [Procedures](#procedures)
@@ -47,11 +45,8 @@
 
 You can start using this repository by cloning it.
 
-# Architecture
-
 ## Di Container
-
-![architecture](https://user-images.githubusercontent.com/39353278/104106317-d6c1eb80-52c5-11eb-8fd7-1206ec5dd12d.png)
+Check out di https://github.com/sarulabs/di
 
 ## Services
 
@@ -144,7 +139,7 @@ A Definitions consists of parts where we write the dependencies required to crea
 
 #### Example
 
-/app/defs/database.go
+app/defs/database.go
 ```go
 var DatabaseServiceDefs = []dingo.Def{
 	{
@@ -215,10 +210,6 @@ you can call the Clean method. In this case, the Close function will be called o
 
 ## Controllers
 
-#### Create
-
-Creating a file in the controllers folder
-
 #### Examples
 
 controllers/serverController.go
@@ -242,10 +233,6 @@ e.GET("/status/ping", controllers.ServerController{}.Ping)
 ```
 
 ## Middlewares
-
-### Create
-
-Creating a file in the middleware folder
 
 ### Example
 
