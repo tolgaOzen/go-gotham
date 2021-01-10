@@ -17,7 +17,7 @@ func Route(e *echo.Echo) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
-	e.Use(GMiddleware.DicMiddleware)
+	e.Use(GMiddleware.DicSubContainerSetterMiddleware)
 
 	//server
 	e.GET("/status/ping", controllers.ServerController{}.Ping)

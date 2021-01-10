@@ -8,7 +8,7 @@ import (
 	"github.com/sarulabs/di/v2"
 	"github.com/sarulabs/dingo/v4"
 
-	providerPkg "gotham/app/providers"
+	providerPkg "gotham/app/provider"
 
 	gorm "gorm.io/gorm"
 )
@@ -56,7 +56,7 @@ func NewBuilder(scopes ...string) (*builder, error) {
 	}
 	provider := &providerPkg.Provider{}
 	if err := provider.Load(); err != nil {
-		return nil, fmt.Errorf("could not load definitions with the Provider (Provider from gotham/app/providers): %v", err)
+		return nil, fmt.Errorf("could not load definitions with the Provider (Provider from gotham/app/provider): %v", err)
 	}
 	for _, d := range getDiDefs(provider) {
 		if err := b.Add(d); err != nil {

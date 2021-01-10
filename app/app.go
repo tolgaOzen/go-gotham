@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/joho/godotenv"
+	"github.com/sarulabs/di/v2"
 	"gotham/app/container/dic"
 	"gotham/config"
 	"log"
@@ -29,7 +30,7 @@ func init() {
 func New() {
 	Application = &App{}
 	Application.Config = Configurations()
-	container, err := dic.NewContainer()
+	container, err := dic.NewContainer(di.App, di.Request)
 	if err != nil {
 		log.Fatal("Error dic.NewContainer")
 	}
@@ -61,7 +62,7 @@ func Configurations() *Config {
 	return &Config{
 		Port:      port,
 		BaseUrl:   os.Getenv("BASE_URL") + ":" + port,
-		Db:        config.GetDbConfig(),
+		//Db:        config.GetDbConfig(),
 		SecretKey: os.Getenv("JWT_SECRET_KEY"),
 		Brand: struct {
 			ProjectName   string

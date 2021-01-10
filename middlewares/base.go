@@ -8,7 +8,7 @@ import (
 )
 
 // For dependency injection container's request scope.
-func DicMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func DicSubContainerSetterMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctn, err := app.Application.Container.SubContainer()
 		if err != nil {

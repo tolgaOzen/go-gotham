@@ -12,7 +12,7 @@ type DatabaseService struct {
 }
 
 type DatabaseConnecter interface {
-	open(config.Database) gorm.Dialector
+	open() gorm.Dialector
 }
 
 func NewDatabaseService(dbConfig config.Database) *DatabaseService {
@@ -25,13 +25,13 @@ func (s DatabaseService) OpenDatabase() (db gorm.Dialector) {
 	var d DatabaseConnecter
 	switch s.DbConfig.DbConnection {
 	case "postgres":
-		d = Postgres{}
+		d = Postgres{s}
 	case "mysql":
-		d = Mysql{}
+		d = Mysql{s}
 	default:
-		d = Mysql{}
+		d = Mysql{s}
 	}
-	db = d.open(s.DbConfig)
+	db = d.open()
 	return
 }
 
@@ -39,18 +39,24 @@ func (DatabaseService) ConnectDatabase(dialector gorm.Dialector) (db *gorm.DB, e
 	return gorm.Open(dialector, &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true})
 }
 
-type Mysql struct{}
+// Mysql
+type Mysql struct{
+	DatabaseService
+}
 
-func (Mysql) open(dbConfig config.Database) (dia gorm.Dialector) {
-	dsn := dbConfig.DbUserName + ":" + dbConfig.DbPassword + "@(" + dbConfig.DbHost + ")/" + dbConfig.DbDatabase + "?charset=utf8&parseTime=True&loc=Local"
+func (m Mysql) open() (dia gorm.Dialector) {
+	dsn := m.DbConfig.DbUserName + ":" + m.DbConfig.DbPassword + "@(" + m.DbConfig.DbHost + ")/" + m.DbConfig.DbDatabase + "?charset=utf8&parseTime=True&loc=Local"
 	return mysql.Open(dsn)
 }
 
-type Postgres struct{}
+// Postgresql
+type Postgres struct{
+	DatabaseService
+}
 
-func (Postgres) open(dbConfig config.Database) (dia gorm.Dialector) {
+func (p Postgres) open() (dia gorm.Dialector) {
 	return postgres.New(postgres.Config{
-		DSN:                  "user=" + dbConfig.DbUserName + " host=" + dbConfig.DbHost + " password=" + dbConfig.DbPassword + " dbname=" + dbConfig.DbDatabase + " port=" + dbConfig.DbPort + " sslmode=disable",
+		DSN:                  "user=" + p.DbConfig.DbUserName + " host=" + p.DbConfig.DbHost + " password=" + p.DbConfig.DbPassword + " dbname=" + p.DbConfig.DbDatabase + " port=" + p.DbConfig.DbPort + " sslmode=disable",
 		PreferSimpleProtocol: true,
 	})
 }

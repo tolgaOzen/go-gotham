@@ -15,6 +15,7 @@ var DatabaseServiceDefs = []dingo.Def{
 		Build: func() (gorm.Dialector, error) {
 			return services.NewDatabaseService(config.GetDbConfig()).OpenDatabase(), nil
 		},
+		NotForAutoFill: true,
 	},
 	{
 		Name:  "db",
