@@ -16,7 +16,7 @@ func Paginate(r *requests.Pagination, model interface{}, orderDefault string) fu
 			r.Limit = 50
 		}
 
-		r.OrderBy = helpers.TagControl(r.OrderBy, "query", model, orderDefault)
+		r.OrderBy = helpers.OrderBySetter(r.OrderBy, "query", model, orderDefault)
 
 		if !helpers.InArray(r.SortBy, []string{"asc", "desc"}) {
 			r.SortBy = "asc"
