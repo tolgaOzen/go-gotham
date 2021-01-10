@@ -238,7 +238,7 @@ func (ServerController) Ping(c echo.Context) (err error) {
 
 routes/api.go
 ```go
-r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.Or([]GMiddleware.MiddlewareI{GMiddleware.IsAdmin{}, GMiddleware.IsVerified{}}))
+e.GET("/status/ping", controllers.ServerController{}.Ping)
 ```
 
 ## Middlewares
