@@ -238,21 +238,6 @@ func (ServerController) Ping(c echo.Context) (err error) {
 
 routes/api.go
 ```go
-type ServerController struct{}
-
-/**
- * Ping
- *
- * @param echo.Context
- * @return error
- */
-func (ServerController) Ping(c echo.Context) (err error) {
-    return c.JSON(http.StatusOK, helpers.MResponse(200 , "pong"))
-}
-```
-
-
-```go
 r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.Or([]GMiddleware.MiddlewareI{GMiddleware.IsAdmin{}, GMiddleware.IsVerified{}}))
 ```
 
