@@ -72,9 +72,9 @@ func InArray(val interface{}, array interface{}) (exists bool) {
 	return
 }
 
-func TagControl(tag, key string, s interface{}, defaultV string) (d string) {
+func OrderBySetter(tag, key string, s interface{}, defaultValue string) (d string) {
 
-	d = defaultV
+	d = defaultValue
 	if tag == "" {
 		return
 	}
