@@ -46,7 +46,10 @@ I have designed go-gotham boilerplate for developers to help them create RESTful
 You can start using this repository by cloning it.
 
 ## Di Container
-Check out di https://github.com/sarulabs/di
+If you do not know if DI could help improving your application, learn more about dependency injection and dependency injection containers:
+
+- [What is a dependency injection container and why use one ?](https://www.sarulabs.com/post/2/2018-06-12/what-is-a-dependency-injection-container-and-why-use-one.html)
+
 
 ## Services
 
