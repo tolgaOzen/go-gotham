@@ -1,12 +1,17 @@
 ![gotham](https://user-images.githubusercontent.com/39353278/103892416-99f6c880-50fc-11eb-8869-af197ca81fd1.png)
 
-## Repos and frameworks used
 
-- Dependency Injection Container ( https://github.com/sarulabs/di )
-- Handler ( https://echo.labstack.com )
-- ORM (https://gorm.io)
-- Validation (https://github.com/go-ozzo/ozzo-validation)
-- Cron (https://github.com/jasonlvhit/gocron)
+go-gotham is a boilerplate that I have created to write RESTful API projects with some libraries and additions I need in my own projects.
+The aim of this boilerplate is to provide developers with scaffolding and common functionality which will make writing APIs exceedingly quick, efficient and convenient.
+
+
+## Check out the documentation of supporting projects 
+
+- Di ( https://github.com/sarulabs/di )
+- Echo ( https://echo.labstack.com )
+- Gorm (https://gorm.io)
+- Ozzo-Validation (https://github.com/go-ozzo/ozzo-validation)
+- GoCron (https://github.com/jasonlvhit/gocron)
 
 ## Table of contents
 
@@ -26,10 +31,9 @@
 - [Middlewares](#conditional-middlewares):
     * [Conditional Middlewares](#conditional-middlewares)
 - [Database](#database)
-    * [Supported Databases](#supported-databases)
-    * [Procedures](#procedures)
-    * [Db Scopes](#db-scopes)
     * [Migrations](#migrations)
+    * [Db Scopes](#db-scopes)
+    * [Procedures](#procedures)
 - [ORM](#orm)
 - [Requests](#requests)
     * [Create Requests](#create-new-requests)
@@ -336,63 +340,21 @@ Authenticated user must be admin and verified
 
 ## Database
 
-### Supported Databases
+### Migrations
 
-supports databases MySQL and PostgreSQL
+When you create a model, insert it into the Initialize() function of the database/migration/base.go.
 
-### Procedures
-
-Creating a file in the models/procedures folder, create a type and create(db *gorm.DB), drop(db *gorm.DB), dropIfExist(
-db *gorm.DB) methods for that type. create getter function for this procedure
-
-You can look at the example below
-
-#### Example
-
-models/procedures/getUsersCount.go
-
-```go
-type UserCount struct {
-    Count int  `json:"rate"`
-}
-
-func (UserCount) create(db *gorm.DB) error {
-    sql := `CREATE PROCEDURE GetUsersCount()
-        BEGIN
-          SELECT COUNT(*) as count FROM users;
-        END`
-
-    return db.Exec(sql).Error
-}
-
-func (UserCount) drop(db *gorm.DB) error {
-    sql := `DROP PROCEDURE GetUserCount;`
-    return db.Exec(sql).Error
-}
-
-func (UserCount) dropIfExist(db *gorm.DB) error {
-    sql := `DROP PROCEDURE IF EXISTS GetUserCount;`
-    return db.Exec(sql).Error
-}
-
-func GetUserCount(db *gorm.DB) UserCount {
-    var returnVal UserCount
-    db.Raw("CALL GetUserCount()").Scan(&returnVal)
-    return returnVal
-}
-```
-
-#### Register Procedure
+#### Register Migration
 
 models/procedures/base.go
+
+#### Example
 
 ```go
 func Initialize() {
     db := app.Application.Container.UnscopedGetDb()
 
-    // UserCount Register
-    _ = DropProcedureIfExist(UserCount{}, db)
-    _ = CreateProcedure(UserCount{}, db)
+    _ = db.AutoMigrate(&models.User{})
     
     app.Application.Container.Clean()
 }
@@ -456,21 +418,59 @@ if err := dic.Db(c.Request()).Scopes(scopes.Paginate(&request.Pagination, models
 }
 ```
 
-### Migrations
+### Procedures
 
-When you create a model, insert it into the Initialize() function of the database/migration/base.go.
+Creating a file in the models/procedures folder, create a type and create(db *gorm.DB), drop(db *gorm.DB), dropIfExist(
+db *gorm.DB) methods for that type. create getter function for this procedure
 
-#### Register Migration
-
-models/procedures/base.go
+You can look at the example below
 
 #### Example
+
+models/procedures/getUsersCount.go
+
+```go
+type UserCount struct {
+    Count int  `json:"rate"`
+}
+
+func (UserCount) create(db *gorm.DB) error {
+    sql := `CREATE PROCEDURE GetUsersCount()
+        BEGIN
+          SELECT COUNT(*) as count FROM users;
+        END`
+
+    return db.Exec(sql).Error
+}
+
+func (UserCount) drop(db *gorm.DB) error {
+    sql := `DROP PROCEDURE GetUserCount;`
+    return db.Exec(sql).Error
+}
+
+func (UserCount) dropIfExist(db *gorm.DB) error {
+    sql := `DROP PROCEDURE IF EXISTS GetUserCount;`
+    return db.Exec(sql).Error
+}
+
+func GetUserCount(db *gorm.DB) UserCount {
+    var returnVal UserCount
+    db.Raw("CALL GetUserCount()").Scan(&returnVal)
+    return returnVal
+}
+```
+
+#### Register Procedure
+
+models/procedures/base.go
 
 ```go
 func Initialize() {
     db := app.Application.Container.UnscopedGetDb()
 
-    _ = db.AutoMigrate(&models.User{})
+    // UserCount Register
+    _ = DropProcedureIfExist(UserCount{}, db)
+    _ = CreateProcedure(UserCount{}, db)
     
     app.Application.Container.Clean()
 }
