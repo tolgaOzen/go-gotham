@@ -17,7 +17,7 @@
 - [Di Container](#di-container)
 - [Services](#services)
 - [Provider](#provider)
-- [Defs](#defs)
+- [Definitions](#definitions)
 - [Di Scopes](#di-scopes)
         * [App Scope](#app-scope)
         * [Request Scope](#request-scope)
@@ -133,7 +133,7 @@ func (p *Provider) Load() error {
 }
 ```
 
-## Defs
+## Definitions
 
 A Definitions consists of parts where we write the dependencies required to create the object and where we can determine the life cycles of objects.
 
