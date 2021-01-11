@@ -1,9 +1,6 @@
 ![gotham](https://user-images.githubusercontent.com/39353278/103892416-99f6c880-50fc-11eb-8869-af197ca81fd1.png)
 
-
-go-gotham is a boilerplate that I have created to write RESTful API projects with some libraries and additions I need in my own projects.
-The aim of this boilerplate is to provide developers with scaffolding and common functionality which will make writing APIs exceedingly quick, efficient and convenient.
-
+go-gotham is a boilerplate that I have created to create RESTful API projects with some libraries and my additions I need in my own projects. The aim of this boilerplate is to provide developers with scaffolding and common functionality which will make writing APIs exceedingly quick, efficient and convenient.
 
 ## Check out the documentation of supporting projects 
 
