@@ -19,9 +19,9 @@
 - [Provider](#provider)
 - [Definitions](#definitions)
 - [Di Scopes](#di-scopes)
-        * [App Scope](#app-scope)
-        * [Request Scope](#request-scope)
-        * [Unscoped](#unscoped)
+    * [App Scope](#app-scope)
+    * [Request Scope](#request-scope)
+    * [Unscoped](#unscoped)
 - [Controllers](#controllers)
 - [Middlewares](#conditional-middlewares):
     * [Conditional Middlewares](#conditional-middlewares)
