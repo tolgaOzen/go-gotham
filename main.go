@@ -5,7 +5,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/sarulabs/dingo/v4"
 	"gotham/app"
-	provider "gotham/app/providers"
+	provider "gotham/app/provider"
+	migrations "gotham/database/migration"
+	"gotham/jobs"
+	"gotham/models/procedures"
 	"gotham/routers"
 	"os"
 )
@@ -20,11 +23,11 @@ func init() {
 
 func main() {
 	app.New()
+	defer app.Application.Container.Delete()
 
-	//procedures.Initialize()
-	//jobs.Initialize()
-	//migrations.Initialize()
+	migrations.Initialize()
+	procedures.Initialize()
+	jobs.Initialize()
 
 	routers.Route(echo.New())
-	defer app.Application.Container.Delete()
 }
