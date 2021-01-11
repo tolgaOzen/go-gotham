@@ -1,6 +1,6 @@
 ![gotham](https://user-images.githubusercontent.com/39353278/103892416-99f6c880-50fc-11eb-8869-af197ca81fd1.png)
 
-I have designed go-gotham for developers to help them create RESTful API. I take advantage of some other libraries however, I did not neglect to add my codes into it. The aim of this boilerplate is to provide developers with scaffolding and common functionality which will make writing APIs exceedingly quick, efficient and convenient.
+I have designed go-gotham boilerplate for developers to help them create RESTful API. I take advantage of some other libraries however, I did not neglect to add my codes into it. The aim of this boilerplate is to provide developers with scaffolding and common functionality which will make writing APIs exceedingly quick, efficient and convenient.
 ## Check out the documentation of supporting projects 
 
 - Di ( https://github.com/sarulabs/di )
@@ -134,7 +134,6 @@ func (p *Provider) Load() error {
 ```
 
 ## Definition
-
 The definition consists of parts where we write the dependencies required to create the object and where we can determine the life cycles of objects.
 
 #### Example
@@ -177,7 +176,6 @@ The db-pool object in the example above is an example.
 
 ### Request Scope
 The request scope is a sub-scope. The container can generate children in the next scope thanks to the SubContainer method.
-
 The container creates a subcontainer and adds the request context via DicSubContainerSetterMiddleware.
 
 So, how can request scope objects be accessed?
@@ -261,7 +259,10 @@ r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.IsVerified,
 ```
 
 ### Conditional Middlewares
-
+The purpose of the conditional middlewares is to decrease the redundant code.
+If we want authenticated user to be admin or verified user we supposed to have written a code with middleware such as isAdminOrIsVerified. In another scenario, we could have wanted authenticated user to be an admin and verified. For this reason we should have written isAdminAndVerified middleware.
+If we only write the isAdmin middleware and isVerified middleware, we will reduce the code repetition in all scenarios.
+You can take a look at the example below.
 #### Example
 
 middlewares/isAdmin.go
@@ -477,7 +478,7 @@ Check out fantastic gorm library https://gorm.io/docs/
 
 ### Create New Requests
 In order to create a request we need to create a type first and then, we should add a Validate method for our type.
-You can take a look at the example below
+You can take a look at the example below.
 
 ### Bind Request And Validate
 
