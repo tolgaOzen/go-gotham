@@ -53,7 +53,7 @@ Check out di https://github.com/sarulabs/di
 
 ### Example
 
-/services/database.go
+services/database.go
 ```go
 type DatabaseService struct {
 	DbConfig config.Database
