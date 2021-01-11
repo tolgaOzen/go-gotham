@@ -7,7 +7,6 @@ import (
 	"gotham/app"
 	provider "gotham/app/provider"
 	migrations "gotham/database/migration"
-	"gotham/jobs"
 	"gotham/models/procedures"
 	"gotham/routers"
 	"os"
@@ -27,7 +26,7 @@ func main() {
 
 	migrations.Initialize()
 	procedures.Initialize()
-	jobs.Initialize()
+	//go jobs.Initialize()
 
 	routers.Route(echo.New())
 }
