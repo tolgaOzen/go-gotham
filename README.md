@@ -267,7 +267,7 @@ r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.IsVerified,
 
 #### Example
 
-/middlewares/isAdmin.go
+middlewares/isAdmin.go
 
 ```go
 type IsAdmin struct {}
@@ -294,7 +294,7 @@ func (i IsAdmin) control(c echo.Context) (bool bool, err error) {
 
 ```
 
-/middlewares/isVerified.go
+middlewares/isVerified.go
 ```go
 type IsVerified struct{}
 
