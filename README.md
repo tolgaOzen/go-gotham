@@ -1,7 +1,6 @@
 ![gotham](https://user-images.githubusercontent.com/39353278/103892416-99f6c880-50fc-11eb-8869-af197ca81fd1.png)
 
-go-gotham is a boilerplate that I have created to create RESTful API projects with some libraries and my additions I need in my own projects. The aim of this boilerplate is to provide developers with scaffolding and common functionality which will make writing APIs exceedingly quick, efficient and convenient.
-
+I have designed go-gotham for developers to help them create RESTful API. I take advantage of some other libraries however, I did not neglect to add my codes into it. The aim of this boilerplate is to provide developers with scaffolding and common functionality which will make writing APIs exceedingly quick, efficient and convenient.
 ## Check out the documentation of supporting projects 
 
 - Di ( https://github.com/sarulabs/di )
@@ -19,7 +18,7 @@ go-gotham is a boilerplate that I have created to create RESTful API projects wi
 - [Di Container](#di-container)
 - [Services](#services)
 - [Provider](#provider)
-- [Definitions](#definitions)
+- [Definition](#definition)
 - [Di Scopes](#di-scopes)
     * [App Scope](#app-scope)
     * [Request Scope](#request-scope)
@@ -134,9 +133,9 @@ func (p *Provider) Load() error {
 }
 ```
 
-## Definitions
+## Definition
 
-A Definitions consists of parts where we write the dependencies required to create the object and where we can determine the life cycles of objects.
+The definition consists of parts where we write the dependencies required to create the object and where we can determine the life cycles of objects.
 
 #### Example
 
@@ -172,18 +171,16 @@ Like the example above, the db object is dependent on the dp-pool object. While 
 ## Di Scopes
 Scopes allow us to control the life cycle of the created objects.
 
-
 ### App Scope
 App scope is the widest scope. It is created once during the application's run time.
-
 The db-pool object in the example above is an example.
 
 ### Request Scope
-The request scope is a sub-scope. Container can generate children in the next scope thanks to the SubContainer method.
+The request scope is a sub-scope. The container can generate children in the next scope thanks to the SubContainer method.
 
 The container creates a subcontainer and adds the request context via DicSubContainerSetterMiddleware.
 
-So how can request scope objects be accessed?
+So, how can request scope objects be accessed?
 #### Example
 
 ```
@@ -192,10 +189,9 @@ dic.Db(c.Request())
 
 When the request is finished, request scope objects are cleaned from the container.
 
-
 ### Unscoped
 
-app can retrieve a request-object with unscoped methods.
+The app can retrieve a request-object with unscoped methods.
 
 ```
 db := app.Application.Container.UnscopedGetDb()
@@ -211,7 +207,7 @@ you can call the Clean method. In this case, the Close function will be called o
 
 ## Controllers
 
-#### Examples
+#### Example
 
 controllers/serverController.go
 ```go
@@ -324,7 +320,6 @@ func (i IsVerified) control(c echo.Context) (bool bool, err error) {
 ```go
 r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.Or([]GMiddleware.MiddlewareI{GMiddleware.IsAdmin{}, GMiddleware.IsVerified{}}))
 ```
-
 Authenticated user must be admin or verified
 
 #### AND
@@ -332,7 +327,6 @@ Authenticated user must be admin or verified
 ```go
 r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.And([]GMiddleware.MiddlewareI{GMiddleware.IsAdmin{}, GMiddleware.IsVerified{}}))
 ```
-
 Authenticated user must be admin and verified
 
 ## Database
@@ -417,10 +411,13 @@ if err := dic.Db(c.Request()).Scopes(scopes.Paginate(&request.Pagination, models
 
 ### Procedures
 
-Creating a file in the models/procedures folder, create a type and create(db *gorm.DB), drop(db *gorm.DB), dropIfExist(
-db *gorm.DB) methods for that type. create getter function for this procedure
+To create a procedures we need to create a type. We need to add 4 different methodologies;
+create(db *gorm.DB),
+dropIfExist(db *gorm.DB),
+drop(db *gorm.DB) and lastly 
+getter method
 
-You can look at the example below
+You can take a look at the example below
 
 #### Example
 
@@ -458,14 +455,13 @@ func GetUserCount(db *gorm.DB) UserCount {
 ```
 
 #### Register Procedure
+In order to use the procedure that we have created, we need to initialize the procedure
 
 models/procedures/base.go
-
 ```go
 func Initialize() {
     db := app.Application.Container.UnscopedGetDb()
 
-    // UserCount Register
     _ = DropProcedureIfExist(UserCount{}, db)
     _ = CreateProcedure(UserCount{}, db)
     
@@ -480,9 +476,8 @@ Check out fantastic gorm library https://gorm.io/docs/
 ## Requests
 
 ### Create New Requests
-
-Creating a file in the requests folder, create a type and create a Validate() method for that type. You can look at the
-examples below
+In order to create a request we need to create a type first and then, we should add a Validate method for our type.
+You can take a look at the example below
 
 ### Bind Request And Validate
 
@@ -539,7 +534,6 @@ Check out ozzo-validation library https://github.com/go-ozzo/ozzo-validation
 #### Example
 
 rules/stringEquals.go
-
 ```go
 func StringEquals(str string) validation.RuleFunc {
 return func (value interface{}) error {
@@ -570,7 +564,7 @@ func (r ExampleRequest) Validate() error {
 
 #### Config
 
-/config/jwt.go
+config/jwt.go
 ```go
 type JwtCustomClaims struct {
     Id               uint   `json:"id"`
@@ -624,12 +618,13 @@ data := map[string]interface{}{
 
 return c.JSON(http.StatusOK, helpers.SuccessResponse(data))
 ```
-In any controlls or middleware you can find information about who owns the token
 
+You can find the information about who owns the token in any controllers or middleware.
 ```go
 u := c.Get("user").(*jwt.Token)
 claims := u.Claims.(*config.JwtCustomClaims)
 ```
+
 
 ## Jobs
 Check out GoCron https://github.com/jasonlvhit/gocron
