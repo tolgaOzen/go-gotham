@@ -23,7 +23,7 @@ I have designed go-gotham boilerplate for developers to help them create RESTful
 - [Controllers](#controllers)
 - [Middlewares](#conditional-middlewares):
     * [Conditional Middlewares](#conditional-middlewares)
-- [ViewModels](#viewModel)
+- [ViewModels](#viewModels)
 - [Database](#database)
     * [Migrations](#migrations)
     * [Db Scopes](#db-scopes)
@@ -48,10 +48,48 @@ If you do not know if DI could help improving your application, learn more about
 
 - [What is a dependency injection container and why use one ?](https://www.sarulabs.com/post/2/2018-06-12/what-is-a-dependency-injection-container-and-why-use-one.html)
 
+## Repositories
+
+### Examples
+
+repositories/userRepository.go
+```go
+type IUserRepository interface {
+	GetUserByID(id int) (models.User, error)
+	GetUserByEmail(email string) (models.User, error)
+	GetUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
+	GetUsersCount() (int64, error)
+}
+
+type UserRepository struct {
+	DB *gorm.DB
+}
+
+func (repository *UserRepository) GetUserByID(id int) (user models.User, err error) {
+	err = repository.DB.First(&user, id).Error
+	return
+}
+
+func (repository *UserRepository) GetUserByEmail(email string) (user models.User, err error) {
+	err = repository.DB.Where("email = ?", email).First(&user).Error
+	return
+}
+
+func (repository *UserRepository) GetUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
+	err = repository.DB.Scopes(pagination.Paginate(models.User{} , orderDefault)).Find(&users).Error
+	return
+}
+
+func (repository *UserRepository) GetUsersCount() (count int64, err error) {
+	// you can user getUsersCount procedure here
+	err = repository.DB.Model(&models.User{}).Count(&count).Error
+	return
+}
+```
 
 ## Services
 
-### Example
+### Examples
 
 services/database.go
 ```go
@@ -110,6 +148,36 @@ func (p Postgres) open() (dia gorm.Dialector) {
 }
 ```
 
+services/userService.go
+```go
+type IUserService interface {
+	FindUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
+	FirstUserByID(id int) (models.User, error)
+	FirstUserByEmail(email string) (models.User, error)
+	CalculateUsersCount() (int64, error)
+}
+
+type UserService struct {
+	repositories.IUserRepository
+}
+
+func (service *UserService) FirstUserByID(id int) (user models.User, err error) {
+	return service.GetUserByID(id)
+}
+
+func (service *UserService) FirstUserByEmail(email string) (user models.User, err error) {
+	return service.GetUserByEmail(email)
+}
+
+func (service *UserService) FindUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
+	return service.GetUsers(pagination, orderDefault)
+}
+
+func (service *UserService) CalculateUsersCount() (count int64, err error) {
+	return service.GetUsersCount()
+}
+```
+
 ## Provider
 
 You will have to write the service definitions and register them in a Provider.
@@ -117,19 +185,26 @@ You will have to write the service definitions and register them in a Provider.
 app/provider/appServiceProvider.go
 ```go
 func (p *Provider) Load() error {
-  
     if err := p.AddDefSlice(defs.DatabaseServiceDefs); err != nil {
-       return err
+        return err
     }
 
-    if err := p.AddDefSlice(defs.CustomService1Defs); err != nil {
-       return err
+    if err := p.AddDefSlice(defs.UserServiceDefs); err != nil {
+        return err
     }
 
-    if err := p.AddDefSlice(defs.CustomService2Defs); err != nil {
-       return err
+    if err := p.AddDefSlice(defs.AuthServiceDefs); err != nil {
+        return err
     }
 
+    if err := p.AddDefSlice(defs.HandlerDefs); err != nil {
+        return err
+    }
+
+    if err := p.AddDefSlice(defs.MiddlewareDefs); err != nil {
+        return err
+    }
+    
     return nil
 }
 ```
@@ -137,7 +212,7 @@ func (p *Provider) Load() error {
 ## Definition
 The definition consists of parts where we write the dependencies required to create the object and where we can determine the life cycles of objects.
 
-#### Example
+#### Examples
 
 app/defs/database.go
 ```go
@@ -166,82 +241,182 @@ var DatabaseServiceDefs = []dingo.Def{
 }
 ```
 
+app/defs/controllers.go
+```go
+var HandlerDefs = []dingo.Def{
+	{
+		Name:  "user-controller",
+		Scope: di.App,
+		Build: func(service services.IUserService) (controllers.UserController, error) {
+			return controllers.UserController{
+				IUserService: service,
+			}, nil
+		},
+		Params: dingo.Params{
+			"0": dingo.Service("user-service"),
+		},
+	},
+	{
+		Name:  "auth-controller",
+		Scope: di.App,
+		Build: func(service services.IAuthService) (controllers.AuthController, error) {
+			return controllers.AuthController{
+				IAuthService: service,
+			}, nil
+		},
+		Params: dingo.Params{
+			"0": dingo.Service("auth-service"),
+		},
+	},
+}
+```
+
+app/defs/middlewares.go
+```go
+var MiddlewareDefs = []dingo.Def{
+        {
+                Name:  "is-admin-middleware",
+                Scope: di.App,
+                Build: func(repository services.IUserService) (s GMiddleware.IsAdmin, err error) {
+                       return GMiddleware.IsAdmin{IUserService: repository}, nil
+                },
+                Params: dingo.Params{
+                     "0": dingo.Service("user-service"),
+                },
+        },
+        {
+                Name:  "is-verified-middleware",
+                Scope: di.App,
+                Build: func(repository services.IUserService) (s GMiddleware.IsVerified , err error) {
+                        return GMiddleware.IsVerified{IUserService: repository}, nil
+                },
+                Params: dingo.Params{
+                        "0": dingo.Service("user-service"),
+                },
+        },
+}
+```
+
+
+app/defs/userService.go
+```go
+var UserServiceDefs = []dingo.Def{
+	{
+		Name:  "user-repository",
+		Scope: di.App,
+		Build: func(db *gorm.DB) (s repositories.IUserRepository, err error) {
+			s = &repositories.UserRepository{DB: db}
+			return s, nil
+		},
+		Params: dingo.Params{
+			"0": dingo.Service("db"),
+		},
+	},
+	{
+		Name:  "user-service",
+		Scope: di.App,
+		Build: func(repository repositories.IUserRepository) (s services.IUserService , err error) {
+			s = &services.UserService{IUserRepository: repository}
+			return s, nil
+		},
+		Params: dingo.Params{
+			"0": dingo.Service("user-repository"),
+		},
+	},
+}
+```
+
+
+
 Like the example above, the db object is dependent on the dp-pool object. While calling the db object, the db-pool object is injected into the db object, and the  db object is created.
 
 ## Controllers
 
 #### Example
 
-controllers/serverController.go
+controllers/userController.go
 ```go
-type ServerController struct{}
+type UserController struct {
+services.IUserService
+}
 
 /**
- * Ping
+ * index
  *
  * @param echo.Context
  * @return error
  */
-func (ServerController) Ping(c echo.Context) (err error) {
-    return c.JSON(http.StatusOK, helpers.MResponse(200 , "pong"))
+func (u UserController) Index(c echo.Context) (err error) {
+
+    request := new(scopes.Pagination)
+
+    if err = c.Bind(request); err != nil {
+        return
+    }
+
+    users, err := u.FindUsers(request, "name")
+    if err != nil {
+        return echo.ErrInternalServerError
+    }
+
+    count, err := u.CalculateUsersCount()
+    if err != nil {
+    return echo.ErrInternalServerError
+    }
+
+    return c.JSON(http.StatusOK, helpers.SuccessResponse(viewModels.Paginator{
+        TotalRecord: int(count),
+        Records:     users,
+        Limit:       request.Limit,
+        Page:        request.Page,
+    }))
 }
 ```
 
 routes/api.go
 ```go
-e.GET("/status/ping", controllers.ServerController{}.Ping)
+r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And([]GMiddleware.IMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
 ```
 
-## Middlewares
+## ViewModels
 
-### Example
+#### Example
 
+viewModels/paginator.go
 ```go
-func IsVerified(next echo.HandlerFunc) echo.HandlerFunc {
-    return func (c echo.Context) error {
-        u := c.Get("user").(*jwt.Token)
-        claims := u.Claims.(*config.JwtCustomClaims)
-
-        user := models.User{}
-        if err := dic.Db(c.Request()).First(&user, claims.Id).Error; err != nil {
-            if errors.Is(err, gorm.ErrRecordNotFound) {
-                return false, echo.ErrUnauthorized
-            }
-           return c.JSON(echo.ErrInternalServerError, err)
-        }
-
-        if user.IsVerified() {
-            return next(c)
-        }
-
-        return c.JSON(http.StatusBadRequest, helpers.ErrorResponse(http.StatusBadRequest, "your email not verified"))
-    }
+type Paginator struct {
+    TotalRecord int         `json:"total_record"`
+    Records     interface{} `json:"records"`
+    Limit       int         `json:"limit"`
+    Page        int         `json:"page"`
 }
 ```
 
-```go
-r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.IsVerified, GMiddleware.IsAdmin)
-```
+## Middlewares
 
 ### Conditional Middlewares
 The purpose of the conditional middlewares is to decrease the redundant code.
 If we want authenticated user to be admin or verified user we supposed to have written a code with middleware such as isAdminOrIsVerified. In another scenario, we could have wanted authenticated user to be an admin and verified. For this reason we should have written isAdminAndVerified middleware.
 If we only write the isAdmin middleware and isVerified middleware, we will reduce the code repetition in all scenarios.
 You can take a look at the example below.
+
+
 #### Example
 
 middlewares/isAdmin.go
 
 ```go
-type IsAdmin struct {}
+type IsAdmin struct {
+    services.IUserService
+}
 
 func (i IsAdmin) control(c echo.Context) (bool bool, err error) {
     u := c.Get("user").(*jwt.Token)
     claims := u.Claims.(*config.JwtCustomClaims)
 
-    user := models.User{}
+    user, err := i.FirstUserByID(int(claims.Id))
 
-    if err := dic.Db(c.Request()).First(&user, claims.Id).Error; err != nil {
+    if err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
             return false, echo.ErrUnauthorized
         }
@@ -249,7 +424,7 @@ func (i IsAdmin) control(c echo.Context) (bool bool, err error) {
     }
 
     if user.IsAdmin() {
-       return true, nil
+        return true, nil
     }
 
     return false, errors.New("you are not admin")
@@ -259,16 +434,18 @@ func (i IsAdmin) control(c echo.Context) (bool bool, err error) {
 
 middlewares/isVerified.go
 ```go
-type IsVerified struct{}
+type IsVerified struct{
+    services.IUserService
+}
 
 func (i IsVerified) control(c echo.Context) (bool bool, err error) {
     u := c.Get("user").(*jwt.Token)
     claims := u.Claims.(*config.JwtCustomClaims)
 
-    user := models.User{}
-    if err := dic.Db(c.Request()).First(&user, claims.Id).Error; err != nil {
+    user, err := i.FirstUserByID(int(claims.Id))
+    if err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
-            return false, echo.ErrNotFound
+            return false, echo.ErrUnauthorized
         }
         return false, echo.ErrInternalServerError
     }
@@ -279,19 +456,20 @@ func (i IsVerified) control(c echo.Context) (bool bool, err error) {
 
     return false, errors.New("your email not verified")
 }
+
 ```
 
 #### OR
 
 ```go
-r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.Or([]GMiddleware.MiddlewareI{GMiddleware.IsAdmin{}, GMiddleware.IsVerified{}}))
+r.GET("/users/:user", app.Application.Container.GetUserController().Show,GMiddleware.Or([]GMiddleware.IMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
 ```
 Authenticated user must be admin or verified
 
 #### AND
 
 ```go
-r.GET("/users/:user", controllers.UserController{}.Show, GMiddleware.And([]GMiddleware.MiddlewareI{GMiddleware.IsAdmin{}, GMiddleware.IsVerified{}}))
+r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And([]GMiddleware.IMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
 ```
 Authenticated user must be admin and verified
 
@@ -309,11 +487,9 @@ models/procedures/base.go
 
 ```go
 func Initialize() {
-    db := app.Application.Container.UnscopedGetDb()
-
-    _ = db.AutoMigrate(&models.User{})
+    db := app.Application.Container.GetDb()
     
-    app.Application.Container.Clean()
+    _ = db.AutoMigrate(&models.User{})
 }
 ```
 
@@ -321,31 +497,12 @@ func Initialize() {
 
 #### Pagination Scope
 
-In Controller Usage
-
-controllers/userController.go index method
+repositories/userRepository.go
 ```go
-request := new(scopes.Pagination)
-
-if err = c.Bind(request); err != nil {
+func (repository *UserRepository) GetUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
+    err = repository.DB.Scopes(pagination.Paginate(models.User{} , orderDefault)).Find(&users).Error
     return
 }
-
-var count int64
-dic.Db(c.Request()).Model(&models.User{}).Count(&count)
-
-var users []models.User
-
-if err := dic.Db(c.Request()).Scopes(scopes.Paginate(request, models.User{}, "name")).Find(&users).Error; err != nil {
-    return echo.ErrInternalServerError
-}
-
-return c.JSON(http.StatusOK, helpers.SuccessResponse(accessories.Paginator{
-    TotalRecord: int(count),
-    Records:     users,
-    Limit:       request.Limit,
-    Page:        request.Page,
-}))
 ```
 
 You can add pagination to any request object
@@ -363,14 +520,6 @@ type ExampleRequest struct {
     * BODY
     */
     Verified int `json:"verified" form:"verified" query:"verified"`
-}
-```
-
-In Controller Usage
-
-```go
-if err := dic.Db(c.Request()).Scopes(scopes.Paginate(&request.Pagination, models.User{}, "name")).Find(&users).Error; err != nil {
-    return echo.ErrInternalServerError
 }
 ```
 
