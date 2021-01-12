@@ -2,16 +2,17 @@ package controllers
 
 import (
 	"github.com/labstack/echo/v4"
-	"gotham/app/container/dic"
 	"gotham/helpers"
-	"gotham/models"
-	"gotham/models/accessories"
 	"gotham/models/scopes"
 	"gotham/requests"
+	"gotham/services"
+	"gotham/viewModels"
 	"net/http"
 )
 
-type UserController struct{}
+type UserController struct {
+	services.IUserService
+}
 
 /**
 * index
@@ -19,24 +20,25 @@ type UserController struct{}
 * @param echo.Context
 * @return error
  */
-func (UserController) Index(c echo.Context) (err error) {
+func (u UserController) Index(c echo.Context) (err error) {
 
-	request := new(requests.Pagination)
+	request := new(scopes.Pagination)
 
 	if err = c.Bind(request); err != nil {
 		return
 	}
 
-	var count int64
-	dic.Db(c.Request()).Model(&models.User{}).Count(&count)
-
-	var users []models.User
-
-	if err := dic.Db(c.Request()).Scopes(scopes.Paginate(request, models.User{}, "name")).Find(&users).Error; err != nil {
+	users, err := u.FindUsers(request, "name")
+	if err != nil {
 		return echo.ErrInternalServerError
 	}
 
-	return c.JSON(http.StatusOK, helpers.SuccessResponse(accessories.Paginator{
+	count, err := u.CalculateUsersCount()
+	if err != nil {
+		return echo.ErrInternalServerError
+	}
+
+	return c.JSON(http.StatusOK, helpers.SuccessResponse(viewModels.Paginator{
 		TotalRecord: int(count),
 		Records:     users,
 		Limit:       request.Limit,
@@ -50,7 +52,7 @@ func (UserController) Index(c echo.Context) (err error) {
 * @param echo.Context
 * @return error
  */
-func (UserController) Show(c echo.Context) (err error) {
+func (u UserController) Show(c echo.Context) (err error) {
 
 	request := new(requests.UserShowRequest)
 
@@ -66,9 +68,9 @@ func (UserController) Show(c echo.Context) (err error) {
 		})
 	}
 
-	var user models.User
 
-	if err := dic.Db(c.Request()).Where("verified = ?", request.Verified).First(&user, request.User).Error; err != nil {
+	user, err := u.FirstUserByID(request.User)
+	if err != nil {
 		return echo.ErrInternalServerError
 	}
 

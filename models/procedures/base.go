@@ -24,10 +24,7 @@ func DropProcedureIfExist(p ProcedureI, db *gorm.DB) error {
 }
 
 func Initialize() {
-	db := app.Application.Container.UnscopedGetDb()
-
+	db := app.Application.Container.GetDb()
 	_ = DropProcedureIfExist(UserCount{}, db)
 	_ = CreateProcedure(UserCount{}, db)
-
-	app.Application.Container.Clean()
 }

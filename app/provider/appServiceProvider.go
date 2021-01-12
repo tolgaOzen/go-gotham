@@ -17,6 +17,23 @@ func (p *Provider) Load() error {
 	if err := p.AddDefSlice(defs.DatabaseServiceDefs); err != nil {
 		return err
 	}
+
+	if err := p.AddDefSlice(defs.UserServiceDefs); err != nil {
+		return err
+	}
+
+	if err := p.AddDefSlice(defs.AuthServiceDefs); err != nil {
+		return err
+	}
+
+	if err := p.AddDefSlice(defs.HandlerDefs); err != nil {
+		return err
+	}
+
+	if err := p.AddDefSlice(defs.MiddlewareDefs); err != nil {
+		return err
+	}
+
 	return nil
 }
 

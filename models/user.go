@@ -38,7 +38,7 @@ func (u *User) VerifyPassword(password string) bool {
  *
  * @return bool
  */
-func (u User) IsVerified() bool {
+func (u *User) IsVerified() bool {
 	return u.Verified == 1
 }
 
@@ -47,10 +47,9 @@ func (u User) IsVerified() bool {
  *
  * @return bool
  */
-func (u User) IsAdmin() bool {
+func (u *User) IsAdmin() bool {
 	return u.Admin == 1
 }
-
 
 /**
  * Scopes

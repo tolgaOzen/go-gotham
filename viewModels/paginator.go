@@ -1,4 +1,4 @@
-package accessories
+package viewModels
 
 type Paginator struct {
 	TotalRecord int         `json:"total_record"`
@@ -6,3 +6,4 @@ type Paginator struct {
 	Limit       int         `json:"limit"`
 	Page        int         `json:"page"`
 }
+

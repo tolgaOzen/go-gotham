@@ -5,21 +5,22 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
-	"gotham/app/container/dic"
 	"gotham/config"
-	"gotham/models"
+	"gotham/services"
 )
 
-type IsVerified struct{}
+type IsVerified struct{
+	services.IUserService
+}
 
 func (i IsVerified) control(c echo.Context) (bool bool, err error) {
 	u := c.Get("user").(*jwt.Token)
 	claims := u.Claims.(*config.JwtCustomClaims)
 
-	user := models.User{}
-	if err := dic.Db(c.Request()).First(&user, claims.Id).Error; err != nil {
+	user, err := i.FirstUserByID(int(claims.Id))
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, echo.ErrNotFound
+			return false, echo.ErrUnauthorized
 		}
 		return false, echo.ErrInternalServerError
 	}

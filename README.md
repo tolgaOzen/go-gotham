@@ -16,16 +16,14 @@ I have designed go-gotham boilerplate for developers to help them create RESTful
 ![GitHub last commit](https://img.shields.io/github/last-commit/tolgaozen/go-gotham)
 
 - [Di Container](#di-container)
+- [Repositories](#repositories)
 - [Services](#services)
 - [Provider](#provider)
 - [Definition](#definition)
-- [Di Scopes](#di-scopes)
-    * [App Scope](#app-scope)
-    * [Request Scope](#request-scope)
-    * [Unscoped](#unscoped)
 - [Controllers](#controllers)
 - [Middlewares](#conditional-middlewares):
     * [Conditional Middlewares](#conditional-middlewares)
+- [ViewModels](#viewModel)
 - [Database](#database)
     * [Migrations](#migrations)
     * [Db Scopes](#db-scopes)
@@ -169,42 +167,6 @@ var DatabaseServiceDefs = []dingo.Def{
 ```
 
 Like the example above, the db object is dependent on the dp-pool object. While calling the db object, the db-pool object is injected into the db object, and the  db object is created.
-
-## Di Scopes
-Scopes allow us to control the life cycle of the created objects.
-
-### App Scope
-App scope is the widest scope. It is created once during the application's run time.
-The db-pool object in the example above is an example.
-
-### Request Scope
-The request scope is a sub-scope. The container can generate children in the next scope thanks to the SubContainer method.
-The container creates a subcontainer and adds the request context via DicSubContainerSetterMiddleware.
-
-So, how can request scope objects be accessed?
-#### Example
-
-```
-dic.Db(c.Request())
-```
-
-When the request is finished, request scope objects are cleaned from the container.
-
-### Unscoped
-
-The app can retrieve a request-object with unscoped methods.
-
-```
-db := app.Application.Container.UnscopedGetDb()
-
-var user models.User
-db.Find(&user)
-
-app.Application.Container.Clean()
-```
-
-Once the objects created with unscoped methods are no longer used,
-you can call the Clean method. In this case, the Close function will be called on the object.
 
 ## Controllers
 
@@ -362,9 +324,8 @@ func Initialize() {
 In Controller Usage
 
 controllers/userController.go index method
-
 ```go
-request := new(requests.Pagination)
+request := new(scopes.Pagination)
 
 if err = c.Bind(request); err != nil {
     return
@@ -464,12 +425,10 @@ In order to use the procedure that we have created, we need to initialize the pr
 models/procedures/base.go
 ```go
 func Initialize() {
-    db := app.Application.Container.UnscopedGetDb()
+    db := app.Application.Container.GetDb()
 
     _ = DropProcedureIfExist(UserCount{}, db)
     _ = CreateProcedure(UserCount{}, db)
-    
-    app.Application.Container.Clean()
 }
 ```
 
@@ -594,33 +553,32 @@ r.Use(middleware.JWTWithConfig(c))
 
 #### LoginController
 
-controllers/loginController.go
+controllers/authController.go
 ```go
-exp := time.Now().Add(time.Minute * 15).Unix()
+accessTokenExp := time.Now().Add(time.Minute * 15).Unix()
 
 claims := &config.JwtCustomClaims{
     Id:    user.ID,
     Name:  user.Name,
     Email: user.Email,
     StandardClaims: jwt.StandardClaims{
-        ExpiresAt: exp,
+        ExpiresAt: accessTokenExp,
     },
 }
 
 token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-t, err := token.SignedString([]byte(app.Application.Config.SecretKey))
+accessToken, err := token.SignedString([]byte(config.Conf.SecretKey))
+
 if err != nil {
-	return
+    return
 }
 
-data := map[string]interface{}{
-    "access_token":      t,
-    "access_token_exp":  exp,
-    "user":              user,
-}
-
-return c.JSON(http.StatusOK, helpers.SuccessResponse(data))
+return c.JSON(http.StatusOK, helpers.SuccessResponse(viewModels.Login{
+    AccessToken: accessToken,
+    AccessTokenExp: accessTokenExp,
+    User: user,
+}))
 ```
 
 You can find the information about who owns the token in any controllers or middleware.

@@ -1,0 +1,31 @@
+package defs
+
+import (
+	"github.com/sarulabs/di/v2"
+	"github.com/sarulabs/dingo/v4"
+	GMiddleware "gotham/middlewares"
+	"gotham/services"
+)
+
+var MiddlewareDefs = []dingo.Def{
+	{
+		Name:  "is-admin-middleware",
+		Scope: di.App,
+		Build: func(repository services.IUserService) (s GMiddleware.IsAdmin, err error) {
+			return GMiddleware.IsAdmin{IUserService: repository}, nil
+		},
+		Params: dingo.Params{
+			"0": dingo.Service("user-service"),
+		},
+	},
+	{
+		Name:  "is-verified-middleware",
+		Scope: di.App,
+		Build: func(repository services.IUserService) (s GMiddleware.IsVerified , err error) {
+			return GMiddleware.IsVerified{IUserService: repository}, nil
+		},
+		Params: dingo.Params{
+			"0": dingo.Service("user-service"),
+		},
+	},
+}

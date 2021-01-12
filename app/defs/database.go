@@ -19,7 +19,7 @@ var DatabaseServiceDefs = []dingo.Def{
 	},
 	{
 		Name:  "db",
-		Scope: di.Request,
+		Scope: di.App,
 		Build: func(dia gorm.Dialector) (db *gorm.DB,err error) {
 			return services.DatabaseService{}.ConnectDatabase(dia)
 		},

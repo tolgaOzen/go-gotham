@@ -10,6 +10,11 @@ import (
 
 	providerPkg "gotham/app/provider"
 
+	controllers "gotham/controllers"
+	middlewares "gotham/middlewares"
+	repositories "gotham/repositories"
+	services "gotham/services"
+
 	gorm "gorm.io/gorm"
 )
 
@@ -215,6 +220,122 @@ func (c *Container) IsClosed() bool {
 	return c.ctn.IsClosed()
 }
 
+// SafeGetAuthController works like SafeGet but only for AuthController.
+// It does not return an interface but a controllers.AuthController.
+func (c *Container) SafeGetAuthController() (controllers.AuthController, error) {
+	i, err := c.ctn.SafeGet("auth-controller")
+	if err != nil {
+		var eo controllers.AuthController
+		return eo, err
+	}
+	o, ok := i.(controllers.AuthController)
+	if !ok {
+		return o, errors.New("could get 'auth-controller' because the object could not be cast to controllers.AuthController")
+	}
+	return o, nil
+}
+
+// GetAuthController is similar to SafeGetAuthController but it does not return the error.
+// Instead it panics.
+func (c *Container) GetAuthController() controllers.AuthController {
+	o, err := c.SafeGetAuthController()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetAuthController works like UnscopedSafeGet but only for AuthController.
+// It does not return an interface but a controllers.AuthController.
+func (c *Container) UnscopedSafeGetAuthController() (controllers.AuthController, error) {
+	i, err := c.ctn.UnscopedSafeGet("auth-controller")
+	if err != nil {
+		var eo controllers.AuthController
+		return eo, err
+	}
+	o, ok := i.(controllers.AuthController)
+	if !ok {
+		return o, errors.New("could get 'auth-controller' because the object could not be cast to controllers.AuthController")
+	}
+	return o, nil
+}
+
+// UnscopedGetAuthController is similar to UnscopedSafeGetAuthController but it does not return the error.
+// Instead it panics.
+func (c *Container) UnscopedGetAuthController() controllers.AuthController {
+	o, err := c.UnscopedSafeGetAuthController()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// AuthController is similar to GetAuthController.
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it applies the GetAuthController method.
+// If the container can not be retrieved, it panics.
+func AuthController(i interface{}) controllers.AuthController {
+	return C(i).GetAuthController()
+}
+
+// SafeGetAuthService works like SafeGet but only for AuthService.
+// It does not return an interface but a services.IAuthService.
+func (c *Container) SafeGetAuthService() (services.IAuthService, error) {
+	i, err := c.ctn.SafeGet("auth-service")
+	if err != nil {
+		var eo services.IAuthService
+		return eo, err
+	}
+	o, ok := i.(services.IAuthService)
+	if !ok {
+		return o, errors.New("could get 'auth-service' because the object could not be cast to services.IAuthService")
+	}
+	return o, nil
+}
+
+// GetAuthService is similar to SafeGetAuthService but it does not return the error.
+// Instead it panics.
+func (c *Container) GetAuthService() services.IAuthService {
+	o, err := c.SafeGetAuthService()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetAuthService works like UnscopedSafeGet but only for AuthService.
+// It does not return an interface but a services.IAuthService.
+func (c *Container) UnscopedSafeGetAuthService() (services.IAuthService, error) {
+	i, err := c.ctn.UnscopedSafeGet("auth-service")
+	if err != nil {
+		var eo services.IAuthService
+		return eo, err
+	}
+	o, ok := i.(services.IAuthService)
+	if !ok {
+		return o, errors.New("could get 'auth-service' because the object could not be cast to services.IAuthService")
+	}
+	return o, nil
+}
+
+// UnscopedGetAuthService is similar to UnscopedSafeGetAuthService but it does not return the error.
+// Instead it panics.
+func (c *Container) UnscopedGetAuthService() services.IAuthService {
+	o, err := c.UnscopedSafeGetAuthService()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// AuthService is similar to GetAuthService.
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it applies the GetAuthService method.
+// If the container can not be retrieved, it panics.
+func AuthService(i interface{}) services.IAuthService {
+	return C(i).GetAuthService()
+}
+
 // SafeGetDb works like SafeGet but only for Db.
 // It does not return an interface but a *gorm.DB.
 func (c *Container) SafeGetDb() (*gorm.DB, error) {
@@ -329,4 +450,294 @@ func (c *Container) UnscopedGetDbPool() gorm.Dialector {
 // If the container can not be retrieved, it panics.
 func DbPool(i interface{}) gorm.Dialector {
 	return C(i).GetDbPool()
+}
+
+// SafeGetIsAdminMiddleware works like SafeGet but only for IsAdminMiddleware.
+// It does not return an interface but a middlewares.IsAdmin.
+func (c *Container) SafeGetIsAdminMiddleware() (middlewares.IsAdmin, error) {
+	i, err := c.ctn.SafeGet("is-admin-middleware")
+	if err != nil {
+		var eo middlewares.IsAdmin
+		return eo, err
+	}
+	o, ok := i.(middlewares.IsAdmin)
+	if !ok {
+		return o, errors.New("could get 'is-admin-middleware' because the object could not be cast to middlewares.IsAdmin")
+	}
+	return o, nil
+}
+
+// GetIsAdminMiddleware is similar to SafeGetIsAdminMiddleware but it does not return the error.
+// Instead it panics.
+func (c *Container) GetIsAdminMiddleware() middlewares.IsAdmin {
+	o, err := c.SafeGetIsAdminMiddleware()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetIsAdminMiddleware works like UnscopedSafeGet but only for IsAdminMiddleware.
+// It does not return an interface but a middlewares.IsAdmin.
+func (c *Container) UnscopedSafeGetIsAdminMiddleware() (middlewares.IsAdmin, error) {
+	i, err := c.ctn.UnscopedSafeGet("is-admin-middleware")
+	if err != nil {
+		var eo middlewares.IsAdmin
+		return eo, err
+	}
+	o, ok := i.(middlewares.IsAdmin)
+	if !ok {
+		return o, errors.New("could get 'is-admin-middleware' because the object could not be cast to middlewares.IsAdmin")
+	}
+	return o, nil
+}
+
+// UnscopedGetIsAdminMiddleware is similar to UnscopedSafeGetIsAdminMiddleware but it does not return the error.
+// Instead it panics.
+func (c *Container) UnscopedGetIsAdminMiddleware() middlewares.IsAdmin {
+	o, err := c.UnscopedSafeGetIsAdminMiddleware()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// IsAdminMiddleware is similar to GetIsAdminMiddleware.
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it applies the GetIsAdminMiddleware method.
+// If the container can not be retrieved, it panics.
+func IsAdminMiddleware(i interface{}) middlewares.IsAdmin {
+	return C(i).GetIsAdminMiddleware()
+}
+
+// SafeGetIsVerifiedMiddleware works like SafeGet but only for IsVerifiedMiddleware.
+// It does not return an interface but a middlewares.IsVerified.
+func (c *Container) SafeGetIsVerifiedMiddleware() (middlewares.IsVerified, error) {
+	i, err := c.ctn.SafeGet("is-verified-middleware")
+	if err != nil {
+		var eo middlewares.IsVerified
+		return eo, err
+	}
+	o, ok := i.(middlewares.IsVerified)
+	if !ok {
+		return o, errors.New("could get 'is-verified-middleware' because the object could not be cast to middlewares.IsVerified")
+	}
+	return o, nil
+}
+
+// GetIsVerifiedMiddleware is similar to SafeGetIsVerifiedMiddleware but it does not return the error.
+// Instead it panics.
+func (c *Container) GetIsVerifiedMiddleware() middlewares.IsVerified {
+	o, err := c.SafeGetIsVerifiedMiddleware()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetIsVerifiedMiddleware works like UnscopedSafeGet but only for IsVerifiedMiddleware.
+// It does not return an interface but a middlewares.IsVerified.
+func (c *Container) UnscopedSafeGetIsVerifiedMiddleware() (middlewares.IsVerified, error) {
+	i, err := c.ctn.UnscopedSafeGet("is-verified-middleware")
+	if err != nil {
+		var eo middlewares.IsVerified
+		return eo, err
+	}
+	o, ok := i.(middlewares.IsVerified)
+	if !ok {
+		return o, errors.New("could get 'is-verified-middleware' because the object could not be cast to middlewares.IsVerified")
+	}
+	return o, nil
+}
+
+// UnscopedGetIsVerifiedMiddleware is similar to UnscopedSafeGetIsVerifiedMiddleware but it does not return the error.
+// Instead it panics.
+func (c *Container) UnscopedGetIsVerifiedMiddleware() middlewares.IsVerified {
+	o, err := c.UnscopedSafeGetIsVerifiedMiddleware()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// IsVerifiedMiddleware is similar to GetIsVerifiedMiddleware.
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it applies the GetIsVerifiedMiddleware method.
+// If the container can not be retrieved, it panics.
+func IsVerifiedMiddleware(i interface{}) middlewares.IsVerified {
+	return C(i).GetIsVerifiedMiddleware()
+}
+
+// SafeGetUserController works like SafeGet but only for UserController.
+// It does not return an interface but a controllers.UserController.
+func (c *Container) SafeGetUserController() (controllers.UserController, error) {
+	i, err := c.ctn.SafeGet("user-controller")
+	if err != nil {
+		var eo controllers.UserController
+		return eo, err
+	}
+	o, ok := i.(controllers.UserController)
+	if !ok {
+		return o, errors.New("could get 'user-controller' because the object could not be cast to controllers.UserController")
+	}
+	return o, nil
+}
+
+// GetUserController is similar to SafeGetUserController but it does not return the error.
+// Instead it panics.
+func (c *Container) GetUserController() controllers.UserController {
+	o, err := c.SafeGetUserController()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetUserController works like UnscopedSafeGet but only for UserController.
+// It does not return an interface but a controllers.UserController.
+func (c *Container) UnscopedSafeGetUserController() (controllers.UserController, error) {
+	i, err := c.ctn.UnscopedSafeGet("user-controller")
+	if err != nil {
+		var eo controllers.UserController
+		return eo, err
+	}
+	o, ok := i.(controllers.UserController)
+	if !ok {
+		return o, errors.New("could get 'user-controller' because the object could not be cast to controllers.UserController")
+	}
+	return o, nil
+}
+
+// UnscopedGetUserController is similar to UnscopedSafeGetUserController but it does not return the error.
+// Instead it panics.
+func (c *Container) UnscopedGetUserController() controllers.UserController {
+	o, err := c.UnscopedSafeGetUserController()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UserController is similar to GetUserController.
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it applies the GetUserController method.
+// If the container can not be retrieved, it panics.
+func UserController(i interface{}) controllers.UserController {
+	return C(i).GetUserController()
+}
+
+// SafeGetUserRepository works like SafeGet but only for UserRepository.
+// It does not return an interface but a repositories.IUserRepository.
+func (c *Container) SafeGetUserRepository() (repositories.IUserRepository, error) {
+	i, err := c.ctn.SafeGet("user-repository")
+	if err != nil {
+		var eo repositories.IUserRepository
+		return eo, err
+	}
+	o, ok := i.(repositories.IUserRepository)
+	if !ok {
+		return o, errors.New("could get 'user-repository' because the object could not be cast to repositories.IUserRepository")
+	}
+	return o, nil
+}
+
+// GetUserRepository is similar to SafeGetUserRepository but it does not return the error.
+// Instead it panics.
+func (c *Container) GetUserRepository() repositories.IUserRepository {
+	o, err := c.SafeGetUserRepository()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetUserRepository works like UnscopedSafeGet but only for UserRepository.
+// It does not return an interface but a repositories.IUserRepository.
+func (c *Container) UnscopedSafeGetUserRepository() (repositories.IUserRepository, error) {
+	i, err := c.ctn.UnscopedSafeGet("user-repository")
+	if err != nil {
+		var eo repositories.IUserRepository
+		return eo, err
+	}
+	o, ok := i.(repositories.IUserRepository)
+	if !ok {
+		return o, errors.New("could get 'user-repository' because the object could not be cast to repositories.IUserRepository")
+	}
+	return o, nil
+}
+
+// UnscopedGetUserRepository is similar to UnscopedSafeGetUserRepository but it does not return the error.
+// Instead it panics.
+func (c *Container) UnscopedGetUserRepository() repositories.IUserRepository {
+	o, err := c.UnscopedSafeGetUserRepository()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UserRepository is similar to GetUserRepository.
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it applies the GetUserRepository method.
+// If the container can not be retrieved, it panics.
+func UserRepository(i interface{}) repositories.IUserRepository {
+	return C(i).GetUserRepository()
+}
+
+// SafeGetUserService works like SafeGet but only for UserService.
+// It does not return an interface but a services.IUserService.
+func (c *Container) SafeGetUserService() (services.IUserService, error) {
+	i, err := c.ctn.SafeGet("user-service")
+	if err != nil {
+		var eo services.IUserService
+		return eo, err
+	}
+	o, ok := i.(services.IUserService)
+	if !ok {
+		return o, errors.New("could get 'user-service' because the object could not be cast to services.IUserService")
+	}
+	return o, nil
+}
+
+// GetUserService is similar to SafeGetUserService but it does not return the error.
+// Instead it panics.
+func (c *Container) GetUserService() services.IUserService {
+	o, err := c.SafeGetUserService()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetUserService works like UnscopedSafeGet but only for UserService.
+// It does not return an interface but a services.IUserService.
+func (c *Container) UnscopedSafeGetUserService() (services.IUserService, error) {
+	i, err := c.ctn.UnscopedSafeGet("user-service")
+	if err != nil {
+		var eo services.IUserService
+		return eo, err
+	}
+	o, ok := i.(services.IUserService)
+	if !ok {
+		return o, errors.New("could get 'user-service' because the object could not be cast to services.IUserService")
+	}
+	return o, nil
+}
+
+// UnscopedGetUserService is similar to UnscopedSafeGetUserService but it does not return the error.
+// Instead it panics.
+func (c *Container) UnscopedGetUserService() services.IUserService {
+	o, err := c.UnscopedSafeGetUserService()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UserService is similar to GetUserService.
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it applies the GetUserService method.
+// If the container can not be retrieved, it panics.
+func UserService(i interface{}) services.IUserService {
+	return C(i).GetUserService()
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/sarulabs/dingo/v4"
 	"gotham/app"
 	provider "gotham/app/provider"
+	"gotham/config"
 	migrations "gotham/database/migration"
 	"gotham/models/procedures"
 	"gotham/routers"
@@ -21,6 +22,7 @@ func init() {
 }
 
 func main() {
+	config.Configurations()
 	app.New()
 	defer app.Application.Container.Delete()
 

@@ -3,10 +3,16 @@ package scopes
 import (
 	"gorm.io/gorm"
 	"gotham/helpers"
-	"gotham/requests"
 )
 
-func Paginate(r *requests.Pagination, model interface{}, orderDefault string) func(db *gorm.DB) *gorm.DB {
+type Pagination struct {
+	Page    int    `query:"page"`
+	Limit   int    `query:"limit"`
+	OrderBy string `query:"order_by"`
+	SortBy  string `query:"sort_by"`
+}
+
+func (r *Pagination) Paginate( model interface{}, orderDefault string) func(db *gorm.DB) *gorm.DB {
 	return func (db *gorm.DB) *gorm.DB {
 		if r.Page == 0 {
 			r.Page = 1
