@@ -13,8 +13,7 @@ var UserServiceDefs = []dingo.Def{
 		Name:  "user-repository",
 		Scope: di.App,
 		Build: func(db *gorm.DB) (s repositories.IUserRepository, err error) {
-			s = &repositories.UserRepository{DB: db}
-			return s, nil
+			return &repositories.UserRepository{DB: db}, nil
 		},
 		Params: dingo.Params{
 			"0": dingo.Service("db"),
@@ -24,8 +23,7 @@ var UserServiceDefs = []dingo.Def{
 		Name:  "user-service",
 		Scope: di.App,
 		Build: func(repository repositories.IUserRepository) (s services.IUserService , err error) {
-			s = &services.UserService{IUserRepository: repository}
-			return s, nil
+			return &services.UserService{IUserRepository: repository}, nil
 		},
 		Params: dingo.Params{
 			"0": dingo.Service("user-repository"),
