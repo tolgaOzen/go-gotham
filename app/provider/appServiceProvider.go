@@ -26,7 +26,7 @@ func (p *Provider) Load() error {
 		return err
 	}
 
-	if err := p.AddDefSlice(defs.HandlerDefs); err != nil {
+	if err := p.AddDefSlice(defs.ControllerDefs); err != nil {
 		return err
 	}
 
