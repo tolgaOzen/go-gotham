@@ -244,7 +244,7 @@ Like the example above, the db object is dependent on the dp-pool object. While 
 
 app/defs/controllers.go
 ```go
-var HandlerDefs = []dingo.Def{
+var ControllerDefs = []dingo.Def{
 	{
 		Name:  "user-controller",
 		Scope: di.App,
