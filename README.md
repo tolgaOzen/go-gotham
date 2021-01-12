@@ -226,7 +226,7 @@ var DatabaseServiceDefs = []dingo.Def{
 	},
 	{
 		Name:  "db",
-		Scope: di.Request,
+		Scope: di.App,
 		Build: func(dia gorm.Dialector) (db *gorm.DB,err error) {
 			return services.DatabaseService{}.ConnectDatabase(dia)
 		},
@@ -240,6 +240,7 @@ var DatabaseServiceDefs = []dingo.Def{
 	},
 }
 ```
+Like the example above, the db object is dependent on the dp-pool object. While calling the db object, the db-pool object is injected into the db object, and the  db object is created.
 
 app/defs/controllers.go
 ```go
@@ -328,7 +329,6 @@ var UserServiceDefs = []dingo.Def{
 
 
 
-Like the example above, the db object is dependent on the dp-pool object. While calling the db object, the db-pool object is injected into the db object, and the  db object is created.
 
 ## Controllers
 
