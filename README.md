@@ -91,6 +91,36 @@ func (repository *UserRepository) GetUsersCount() (count int64, err error) {
 
 ### Examples
 
+services/userService.go
+```go
+type IUserService interface {
+	FindUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
+	FirstUserByID(id int) (models.User, error)
+	FirstUserByEmail(email string) (models.User, error)
+	CalculateUsersCount() (int64, error)
+}
+
+type UserService struct {
+	repositories.IUserRepository
+}
+
+func (service *UserService) FirstUserByID(id int) (user models.User, err error) {
+	return service.GetUserByID(id)
+}
+
+func (service *UserService) FirstUserByEmail(email string) (user models.User, err error) {
+	return service.GetUserByEmail(email)
+}
+
+func (service *UserService) FindUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
+	return service.GetUsers(pagination, orderDefault)
+}
+
+func (service *UserService) CalculateUsersCount() (count int64, err error) {
+	return service.GetUsersCount()
+}
+```
+
 services/database.go
 ```go
 type DatabaseService struct {
@@ -145,36 +175,6 @@ func (p Postgres) open() (dia gorm.Dialector) {
 		DSN:                  "user=" + p.DbConfig.DbUserName + " host=" + p.DbConfig.DbHost + " password=" + p.DbConfig.DbPassword + " dbname=" + p.DbConfig.DbDatabase + " port=" + p.DbConfig.DbPort + " sslmode=disable",
 		PreferSimpleProtocol: true,
 	})
-}
-```
-
-services/userService.go
-```go
-type IUserService interface {
-	FindUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
-	FirstUserByID(id int) (models.User, error)
-	FirstUserByEmail(email string) (models.User, error)
-	CalculateUsersCount() (int64, error)
-}
-
-type UserService struct {
-	repositories.IUserRepository
-}
-
-func (service *UserService) FirstUserByID(id int) (user models.User, err error) {
-	return service.GetUserByID(id)
-}
-
-func (service *UserService) FirstUserByEmail(email string) (user models.User, err error) {
-	return service.GetUserByEmail(email)
-}
-
-func (service *UserService) FindUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
-	return service.GetUsers(pagination, orderDefault)
-}
-
-func (service *UserService) CalculateUsersCount() (count int64, err error) {
-	return service.GetUsersCount()
 }
 ```
 
@@ -325,9 +325,6 @@ var UserServiceDefs = []dingo.Def{
 }
 ```
 
-
-
-
 ## Controllers
 
 #### Example
@@ -335,7 +332,7 @@ var UserServiceDefs = []dingo.Def{
 controllers/userController.go
 ```go
 type UserController struct {
-services.IUserService
+    services.IUserService
 }
 
 /**
