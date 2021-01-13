@@ -15,6 +15,7 @@ I have designed go-gotham boilerplate for developers to help them create RESTful
 ![GitHub top language](https://img.shields.io/github/languages/top/tolgaozen/go-gotham)
 ![GitHub last commit](https://img.shields.io/github/last-commit/tolgaozen/go-gotham)
 
+- [Install](#install)
 - [Di Container](#di-container)
 - [Repositories](#repositories)
 - [Services](#services)
@@ -39,9 +40,13 @@ I have designed go-gotham boilerplate for developers to help them create RESTful
 - [Jobs](#jobs)
 - [Features To Be Added Soon](#features-to-be-added-soon)
 
-## Setup
+## Install
 
 You can start using this repository by cloning it.
+
+```
+git clone https://github.com/tolgaOzen/go-gotham
+```
 
 ## Di Container
 If you do not know if DI could help improving your application, learn more about dependency injection and dependency injection containers:
