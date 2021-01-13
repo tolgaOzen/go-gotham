@@ -20,7 +20,7 @@ I have designed go-gotham boilerplate for developers to help them create RESTful
 - [Repositories](#repositories)
 - [Services](#services)
 - [Provider](#provider)
-- [Definition](#definition)
+- [Definitions](#definitions)
 - [Controllers](#controllers)
 - [Middlewares](#conditional-middlewares):
     * [Conditional Middlewares](#conditional-middlewares)
@@ -214,7 +214,7 @@ func (p *Provider) Load() error {
 }
 ```
 
-## Definition
+## Definitions
 The definition consists of parts where we write the dependencies required to create the object and where we can determine the life cycles of objects.
 
 #### Examples
