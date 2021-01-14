@@ -23,7 +23,7 @@ var UserServiceDefs = []dingo.Def{
 		Name:  "user-service",
 		Scope: di.App,
 		Build: func(repository repositories.IUserRepository) (s services.IUserService , err error) {
-			return &services.UserService{IUserRepository: repository}, nil
+			return &services.UserService{UserRepository: repository}, nil
 		},
 		Params: dingo.Params{
 			"0": dingo.Service("user-repository"),

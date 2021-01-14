@@ -15,7 +15,7 @@ import (
 )
 
 type AuthController struct {
-	services.IAuthService
+	AuthService services.IAuthService
 }
 
 /**
@@ -40,7 +40,7 @@ func (a AuthController) Login(c echo.Context) (err error) {
 		})
 	}
 
-	user, dbError := a.FirstUserByEmail(request.Email)
+	user, dbError := a.AuthService.GetUserByEmail(request.Email)
 
 	if dbError != nil {
 		if errors.Is(dbError, gorm.ErrRecordNotFound) {
@@ -54,7 +54,7 @@ func (a AuthController) Login(c echo.Context) (err error) {
 		}
 	}
 
-	b, err := a.Check(request.Email, request.Password)
+	b, err := a.AuthService.Check(request.Email, request.Password)
 	if !b {
 		return c.JSON(http.StatusUnprocessableEntity, map[string]interface{}{
 			"errors": map[string]string{
@@ -63,7 +63,7 @@ func (a AuthController) Login(c echo.Context) (err error) {
 		})
 	}
 
-	accessTokenExp := time.Now().Add(time.Minute * 15).Unix()
+	accessTokenExp := time.Now().Add(time.Hour * 720).Unix()
 
 	claims := &config.JwtCustomClaims{
 		Id:    user.ID,

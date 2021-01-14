@@ -11,7 +11,7 @@ import (
 )
 
 type UserController struct {
-	services.IUserService
+	UserService services.IUserService
 }
 
 /**
@@ -28,12 +28,12 @@ func (u UserController) Index(c echo.Context) (err error) {
 		return
 	}
 
-	users, err := u.FindUsers(request, "name")
+	users, err := u.UserService.GetUsers(request, "name")
 	if err != nil {
 		return echo.ErrInternalServerError
 	}
 
-	count, err := u.CalculateUsersCount()
+	count, err := u.UserService.GetUsersCount()
 	if err != nil {
 		return echo.ErrInternalServerError
 	}
@@ -69,7 +69,7 @@ func (u UserController) Show(c echo.Context) (err error) {
 	}
 
 
-	user, err := u.FirstUserByID(request.User)
+	user, err := u.UserService.GetUserByID(request.User)
 	if err != nil {
 		return echo.ErrInternalServerError
 	}

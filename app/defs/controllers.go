@@ -13,7 +13,7 @@ var ControllerDefs = []dingo.Def{
 		Scope: di.App,
 		Build: func(service services.IUserService) (controllers.UserController, error) {
 			return controllers.UserController{
-				IUserService: service,
+				UserService: service,
 			}, nil
 		},
 		Params: dingo.Params{
@@ -25,7 +25,7 @@ var ControllerDefs = []dingo.Def{
 		Scope: di.App,
 		Build: func(service services.IAuthService) (controllers.AuthController, error) {
 			return controllers.AuthController{
-				IAuthService: service,
+				AuthService: service,
 			}, nil
 		},
 		Params: dingo.Params{

@@ -7,29 +7,29 @@ import (
 )
 
 type IUserService interface {
-	FindUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
-	FirstUserByID(id int) (models.User, error)
-	FirstUserByEmail(email string) (models.User, error)
-	CalculateUsersCount() (int64, error)
+	GetUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
+	GetUserByID(id int) (models.User, error)
+	GetUserByEmail(email string) (models.User, error)
+	GetUsersCount() (int64, error)
 }
 
 type UserService struct {
-	repositories.IUserRepository
+	UserRepository repositories.IUserRepository
 }
 
-func (service *UserService) FirstUserByID(id int) (user models.User, err error) {
-	return service.GetUserByID(id)
+func (service *UserService) GetUserByID(id int) (user models.User, err error) {
+	return service.UserRepository.GetUserByID(id)
 }
 
-func (service *UserService) FirstUserByEmail(email string) (user models.User, err error) {
-	return service.GetUserByEmail(email)
+func (service *UserService) GetUserByEmail(email string) (user models.User, err error) {
+	return service.UserRepository.GetUserByEmail(email)
 }
 
-func (service *UserService) FindUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
-	return service.GetUsers(pagination, orderDefault)
+func (service *UserService) GetUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
+	return service.UserRepository.GetUsers(pagination, orderDefault)
 }
 
-func (service *UserService) CalculateUsersCount() (count int64, err error) {
-	return service.GetUsersCount()
+func (service *UserService) GetUsersCount() (count int64, err error) {
+	return service.UserRepository.GetUsersCount()
 }
 

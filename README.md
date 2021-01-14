@@ -16,15 +16,15 @@ I have designed go-gotham boilerplate for developers to help them create RESTful
 ![GitHub last commit](https://img.shields.io/github/last-commit/tolgaozen/go-gotham)
 
 - [Install](#install)
-- [Di Container](#di-container)
 - [Repositories](#repositories)
 - [Services](#services)
-- [Provider](#provider)
-- [Definitions](#definitions)
 - [Controllers](#controllers)
-- [Middlewares](#conditional-middlewares):
-    * [Conditional Middlewares](#conditional-middlewares)
 - [ViewModels](#viewModels)
+- [Middlewares](#conditional-middlewares):
+  * [Conditional Middlewares](#conditional-middlewares)
+- [Definitions](#definitions)
+- [Provider](#provider)
+- [Container](#container)
 - [Database](#database)
     * [Migrations](#migrations)
     * [Db Scopes](#db-scopes)
@@ -48,12 +48,9 @@ You can start using this repository by cloning it.
 git clone https://github.com/tolgaOzen/go-gotham
 ```
 
-## Di Container
-If you do not know if DI could help improving your application, learn more about dependency injection and dependency injection containers:
-
-- [What is a dependency injection container and why use one ?](https://www.sarulabs.com/post/2/2018-06-12/what-is-a-dependency-injection-container-and-why-use-one.html)
-
 ## Repositories
+
+The repositories folder is the data access layer. All database queries made must be performed in the repositories.
 
 ### Examples
 
@@ -92,241 +89,86 @@ func (repository *UserRepository) GetUsersCount() (count int64, err error) {
 }
 ```
 
+### Injection
+The database dependency of the repositories is injected into the defs folder.
+
+defs/userService.go
+```go
+var UserServiceDefs = []dingo.Def{
+    {
+        Name:  "user-repository",
+        Scope: di.App,
+        Build: func(db *gorm.DB) (s repositories.IUserRepository, err error) {
+          return &repositories.UserRepository{DB: db}, nil
+        },
+        Params: dingo.Params{
+          "0": dingo.Service("db"),
+       },
+    },
+    . 
+    .
+    .
+}
+```
+
 ## Services
+
+The services folder is where the business logic is based. It is responsible for processing the request from the controller. It takes data from the data layer (repositories) and works to meet what the controller expects.
+
+The controller can implement interfaces to many services to meet the needs of the request. The controller must be unaware of the logic of the services.
 
 ### Examples
 
 services/userService.go
 ```go
 type IUserService interface {
-	FindUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
-	FirstUserByID(id int) (models.User, error)
-	FirstUserByEmail(email string) (models.User, error)
-	CalculateUsersCount() (int64, error)
+    GetUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
+    GetUserByID(id int) (models.User, error)
+    GetUserByEmail(email string) (models.User, error)
+    GetUsersCount() (int64, error)
 }
 
 type UserService struct {
-	repositories.IUserRepository
+    UserRepository repositories.IUserRepository
 }
 
-func (service *UserService) FirstUserByID(id int) (user models.User, err error) {
-	return service.GetUserByID(id)
+func (service *UserService) GetUserByID(id int) (user models.User, err error) {
+    return service.UserRepository.GetUserByID(id)
 }
 
-func (service *UserService) FirstUserByEmail(email string) (user models.User, err error) {
-	return service.GetUserByEmail(email)
+func (service *UserService) GetUserByEmail(email string) (user models.User, err error) {
+    return service.UserRepository.GetUserByEmail(email)
 }
 
-func (service *UserService) FindUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
-	return service.GetUsers(pagination, orderDefault)
+func (service *UserService) GetUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
+    return service.UserRepository.GetUsers(pagination, orderDefault)
 }
 
-func (service *UserService) CalculateUsersCount() (count int64, err error) {
-	return service.GetUsersCount()
-}
-```
-
-services/database.go
-```go
-type DatabaseService struct {
-	DbConfig config.Database
-}
-
-type DatabaseConnecter interface {
-	open() gorm.Dialector
-}
-
-func NewDatabaseService(dbConfig config.Database) *DatabaseService {
-	return &DatabaseService{
-		DbConfig: dbConfig,
-	}
-}
-
-func (s DatabaseService) OpenDatabase() (db gorm.Dialector) {
-	var d DatabaseConnecter
-	switch s.DbConfig.DbConnection {
-	case "postgres":
-		d = Postgres{s}
-	case "mysql":
-		d = Mysql{s}
-	default:
-		d = Mysql{s}
-	}
-	db = d.open()
-	return
-}
-
-func (DatabaseService) ConnectDatabase(dialector gorm.Dialector) (db *gorm.DB, err error) {
-	return gorm.Open(dialector, &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true})
-}
-
-// Mysql
-type Mysql struct{
-	DatabaseService
-}
-
-func (m Mysql) open() (dia gorm.Dialector) {
-	dsn := m.DbConfig.DbUserName + ":" + m.DbConfig.DbPassword + "@(" + m.DbConfig.DbHost + ")/" + m.DbConfig.DbDatabase + "?charset=utf8&parseTime=True&loc=Local"
-	return mysql.Open(dsn)
-}
-
-// Postgresql
-type Postgres struct{
-	DatabaseService
-}
-
-func (p Postgres) open() (dia gorm.Dialector) {
-	return postgres.New(postgres.Config{
-		DSN:                  "user=" + p.DbConfig.DbUserName + " host=" + p.DbConfig.DbHost + " password=" + p.DbConfig.DbPassword + " dbname=" + p.DbConfig.DbDatabase + " port=" + p.DbConfig.DbPort + " sslmode=disable",
-		PreferSimpleProtocol: true,
-	})
-}
-```
-
-## Provider
-
-You will have to write the service definitions and register them in a Provider.
-
-app/provider/appServiceProvider.go
-```go
-func (p *Provider) Load() error {
-    if err := p.AddDefSlice(defs.DatabaseServiceDefs); err != nil {
-        return err
-    }
-
-    if err := p.AddDefSlice(defs.UserServiceDefs); err != nil {
-        return err
-    }
-
-    if err := p.AddDefSlice(defs.AuthServiceDefs); err != nil {
-        return err
-    }
-
-    if err := p.AddDefSlice(defs.ControllerDefs); err != nil {
-        return err
-    }
-
-    if err := p.AddDefSlice(defs.MiddlewareDefs); err != nil {
-        return err
-    }
-    
-    return nil
-}
-```
-
-## Definitions
-The definition consists of parts where we write the dependencies required to create the object and where we can determine the life cycles of objects.
-
-#### Examples
-
-app/defs/database.go
-```go
-var DatabaseServiceDefs = []dingo.Def{
-	{
-		Name:  "db-pool",
-		Scope: di.App,
-		Build: func() (gorm.Dialector, error) {
-			return services.NewDatabaseService(config.GetDbConfig()).OpenDatabase(), nil
-		},
-	},
-	{
-		Name:  "db",
-		Scope: di.App,
-		Build: func(dia gorm.Dialector) (db *gorm.DB,err error) {
-			return services.DatabaseService{}.ConnectDatabase(dia)
-		},
-		Params: dingo.Params{
-			"0": dingo.Service("db-pool"),
-		},
-		Close: func(db *gorm.DB) error {
-			sqlDB, _ := db.DB()
-			return sqlDB.Close()
-		},
-	},
-}
-```
-Like the example above, the db object is dependent on the dp-pool object. While calling the db object, the db-pool object is injected into the db object, and the  db object is created.
-
-app/defs/controllers.go
-```go
-var ControllerDefs = []dingo.Def{
-	{
-		Name:  "user-controller",
-		Scope: di.App,
-		Build: func(service services.IUserService) (controllers.UserController, error) {
-			return controllers.UserController{
-				IUserService: service,
-			}, nil
-		},
-		Params: dingo.Params{
-			"0": dingo.Service("user-service"),
-		},
-	},
-	{
-		Name:  "auth-controller",
-		Scope: di.App,
-		Build: func(service services.IAuthService) (controllers.AuthController, error) {
-			return controllers.AuthController{
-				IAuthService: service,
-			}, nil
-		},
-		Params: dingo.Params{
-			"0": dingo.Service("auth-service"),
-		},
-	},
-}
-```
-
-app/defs/middlewares.go
-```go
-var MiddlewareDefs = []dingo.Def{
-        {
-                Name:  "is-admin-middleware",
-                Scope: di.App,
-                Build: func(repository services.IUserService) (s GMiddleware.IsAdmin, err error) {
-                       return GMiddleware.IsAdmin{IUserService: repository}, nil
-                },
-                Params: dingo.Params{
-                     "0": dingo.Service("user-service"),
-                },
-        },
-        {
-                Name:  "is-verified-middleware",
-                Scope: di.App,
-                Build: func(repository services.IUserService) (s GMiddleware.IsVerified , err error) {
-                        return GMiddleware.IsVerified{IUserService: repository}, nil
-                },
-                Params: dingo.Params{
-                        "0": dingo.Service("user-service"),
-                },
-        },
+func (service *UserService) GetUsersCount() (count int64, err error) {
+    return service.UserRepository.GetUsersCount()
 }
 ```
 
 
-app/defs/userService.go
+### Injection
+The data layer dependency of the services is injected in the defs folder.
+
+defs/userService.go
 ```go
 var UserServiceDefs = []dingo.Def{
-	{
-		Name:  "user-repository",
-		Scope: di.App,
-		Build: func(db *gorm.DB) (s repositories.IUserRepository, err error) {
-			return repositories.UserRepository{DB: db}, nil
-		},
-		Params: dingo.Params{
-			"0": dingo.Service("db"),
-		},
-	},
-	{
-		Name:  "user-service",
-		Scope: di.App,
-		Build: func(repository repositories.IUserRepository) (s services.IUserService , err error) {
-			return &services.UserService{IUserRepository: repository}, nil
-		},
-		Params: dingo.Params{
-			"0": dingo.Service("user-repository"),
-		},
-	},
+    .
+    .
+    .
+    {
+        Name:  "user-service",
+        Scope: di.App,
+        Build: func(repository repositories.IUserRepository) (s services.IUserService , err error) {
+            return &services.UserService{UserRepository: repository}, nil
+        },
+        Params: dingo.Params{
+            "0": dingo.Service("user-repository"),
+        },
+    },  
 }
 ```
 
@@ -472,6 +314,158 @@ Authenticated user must be admin or verified
 r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And([]GMiddleware.IMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
 ```
 Authenticated user must be admin and verified
+
+## Definitions
+The definition consists of parts where we write the dependencies required to create the object and where we can determine the life cycles of objects.
+
+#### Examples
+
+app/defs/database.go
+```go
+var DatabaseServiceDefs = []dingo.Def{
+	{
+		Name:  "db-pool",
+		Scope: di.App,
+		Build: func() (gorm.Dialector, error) {
+			return services.NewDatabaseService(config.GetDbConfig()).OpenDatabase(), nil
+		},
+	},
+	{
+		Name:  "db",
+		Scope: di.App,
+		Build: func(dia gorm.Dialector) (db *gorm.DB,err error) {
+			return services.DatabaseService{}.ConnectDatabase(dia)
+		},
+		Params: dingo.Params{
+			"0": dingo.Service("db-pool"),
+		},
+		Close: func(db *gorm.DB) error {
+			sqlDB, _ := db.DB()
+			return sqlDB.Close()
+		},
+	},
+}
+```
+Like the example above, the db object is dependent on the dp-pool object. While calling the db object, the db-pool object is injected into the db object, and the  db object is created.
+
+app/defs/controllers.go
+```go
+var ControllerDefs = []dingo.Def{
+	{
+		Name:  "user-controller",
+		Scope: di.App,
+		Build: func(service services.IUserService) (controllers.UserController, error) {
+			return controllers.UserController{
+				IUserService: service,
+			}, nil
+		},
+		Params: dingo.Params{
+			"0": dingo.Service("user-service"),
+		},
+	},
+	{
+		Name:  "auth-controller",
+		Scope: di.App,
+		Build: func(service services.IAuthService) (controllers.AuthController, error) {
+			return controllers.AuthController{
+				IAuthService: service,
+			}, nil
+		},
+		Params: dingo.Params{
+			"0": dingo.Service("auth-service"),
+		},
+	},
+}
+```
+
+app/defs/middlewares.go
+```go
+var MiddlewareDefs = []dingo.Def{
+        {
+                Name:  "is-admin-middleware",
+                Scope: di.App,
+                Build: func(repository services.IUserService) (s GMiddleware.IsAdmin, err error) {
+                       return GMiddleware.IsAdmin{IUserService: repository}, nil
+                },
+                Params: dingo.Params{
+                     "0": dingo.Service("user-service"),
+                },
+        },
+        {
+                Name:  "is-verified-middleware",
+                Scope: di.App,
+                Build: func(repository services.IUserService) (s GMiddleware.IsVerified , err error) {
+                        return GMiddleware.IsVerified{IUserService: repository}, nil
+                },
+                Params: dingo.Params{
+                        "0": dingo.Service("user-service"),
+                },
+        },
+}
+```
+
+
+app/defs/userService.go
+```go
+var UserServiceDefs = []dingo.Def{
+	{
+		Name:  "user-repository",
+		Scope: di.App,
+		Build: func(db *gorm.DB) (s repositories.IUserRepository, err error) {
+			return repositories.UserRepository{DB: db}, nil
+		},
+		Params: dingo.Params{
+			"0": dingo.Service("db"),
+		},
+	},
+	{
+		Name:  "user-service",
+		Scope: di.App,
+		Build: func(repository repositories.IUserRepository) (s services.IUserService , err error) {
+			return &services.UserService{IUserRepository: repository}, nil
+		},
+		Params: dingo.Params{
+			"0": dingo.Service("user-repository"),
+		},
+	},
+}
+```
+
+## Provider
+
+You will have to write the service definitions and register them in a Provider.
+
+app/provider/appServiceProvider.go
+```go
+func (p *Provider) Load() error {
+    if err := p.AddDefSlice(defs.DatabaseServiceDefs); err != nil {
+        return err
+    }
+
+    if err := p.AddDefSlice(defs.UserServiceDefs); err != nil {
+        return err
+    }
+
+    if err := p.AddDefSlice(defs.AuthServiceDefs); err != nil {
+        return err
+    }
+
+    if err := p.AddDefSlice(defs.ControllerDefs); err != nil {
+        return err
+    }
+
+    if err := p.AddDefSlice(defs.MiddlewareDefs); err != nil {
+        return err
+    }
+    
+    return nil
+}
+```
+
+## Container
+If you do not know if DI could help improving your application, learn more about dependency injection and dependency injection containers:
+
+- [What is a dependency injection container and why use one ?](https://www.sarulabs.com/post/2/2018-06-12/what-is-a-dependency-injection-container-and-why-use-one.html)
 
 ## Database
 
@@ -735,7 +729,6 @@ You can find the information about who owns the token in any controllers or midd
 u := c.Get("user").(*jwt.Token)
 claims := u.Claims.(*config.JwtCustomClaims)
 ```
-
 
 ## Jobs
 Check out GoCron https://github.com/jasonlvhit/gocron

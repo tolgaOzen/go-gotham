@@ -10,14 +10,14 @@ import (
 )
 
 type IsAdmin struct {
-	services.IUserService
+	UserService services.IUserService
 }
 
 func (i IsAdmin) control(c echo.Context) (bool bool, err error) {
 	u := c.Get("user").(*jwt.Token)
 	claims := u.Claims.(*config.JwtCustomClaims)
 
-	user, err := i.FirstUserByID(int(claims.Id))
+	user, err := i.UserService.GetUserByID(int(claims.Id))
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

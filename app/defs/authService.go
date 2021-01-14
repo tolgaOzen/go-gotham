@@ -12,7 +12,7 @@ var AuthServiceDefs = []dingo.Def{
 		Name:  "auth-service",
 		Scope: di.App,
 		Build: func(repository repositories.IUserRepository) (s services.IAuthService, err error) {
-			s = &services.AuthService{IUserRepository: repository}
+			s = &services.AuthService{UserRepository: repository}
 			return s, nil
 		},
 		Params: dingo.Params{
