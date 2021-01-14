@@ -115,9 +115,7 @@ var UserServiceDefs = []dingo.Def{
 
 The services folder is where the business logic is based. It is responsible for processing the request from the controller. It takes data from the data layer (repositories) and works to meet what the controller expects.
 
-The controller can implement interfaces to many services to meet the needs of the request. The controller must be unaware of the logic of the services.
-
-### Examples
+### Example
 
 services/userService.go
 ```go
@@ -174,12 +172,16 @@ var UserServiceDefs = []dingo.Def{
 
 ## Controllers
 
+Controllers are the handlers of all requests coming to the route.
+
+The controller can implement interfaces to many services to meet the needs of the request. The controller must be unaware of the logic of the services.
+
 #### Example
 
 controllers/userController.go
 ```go
 type UserController struct {
-    services.IUserService
+    UserService services.IUserService
 }
 
 /**
@@ -196,14 +198,14 @@ func (u UserController) Index(c echo.Context) (err error) {
         return
     }
 
-    users, err := u.FindUsers(request, "name")
+    users, err := u.UserService.GetUsers(request, "name")
     if err != nil {
         return echo.ErrInternalServerError
     }
 
-    count, err := u.CalculateUsersCount()
+    count, err := u.UserService.GetUsersCount()
     if err != nil {
-    return echo.ErrInternalServerError
+        return echo.ErrInternalServerError
     }
 
     return c.JSON(http.StatusOK, helpers.SuccessResponse(viewModels.Paginator{
@@ -214,10 +216,34 @@ func (u UserController) Index(c echo.Context) (err error) {
     }))
 }
 ```
+#### Route Example
 
 routes/api.go
 ```go
 r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And([]GMiddleware.IMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
+```
+
+#### Injection
+
+defs/controllers.go
+```go
+var ControllerDefs = []dingo.Def{
+    {
+        Name:  "user-controller",
+        Scope: di.App,
+        Build: func(service services.IUserService) (controllers.UserController, error) {
+            return controllers.UserController{
+        UserService: service,
+        }, nil
+    },
+        Params: dingo.Params{
+        "0": dingo.Service("user-service"),
+        },
+    },
+    .
+    .
+    .
+}
 ```
 
 ## ViewModels
