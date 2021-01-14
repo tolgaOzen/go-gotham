@@ -19,12 +19,14 @@ I have designed go-gotham boilerplate for developers to help them create RESTful
 - [Repositories](#repositories)
 - [Services](#services)
 - [Controllers](#controllers)
+- [Models](#models)
 - [ViewModels](#viewModels)
 - [Middlewares](#conditional-middlewares):
   * [Conditional Middlewares](#conditional-middlewares)
 - [Definitions](#definitions)
 - [Provider](#provider)
 - [Container](#container)
+- [Routers](#routers)
 - [Database](#database)
     * [Migrations](#migrations)
     * [Db Scopes](#db-scopes)
@@ -169,6 +171,69 @@ var UserServiceDefs = []dingo.Def{
     },  
 }
 ```
+## Models
+
+The models must be a reflection of our data objects. Only a few facilitating methods should be written to models.
+
+#### Example
+
+models/user.go
+```go
+type User struct {
+    ID                uint    `gorm:"primaryKey;auto_increment" json:"id"`
+    Name              string  `gorm:"size:255;not null" json:"name"`
+    Email             string  `gorm:"size:100;not null;unique;unique_index" json:"email"`
+    Password          string  `gorm:"size:100" json:"-"`
+    Verified          uint8   `gorm:"type:boolean" json:"verified"`
+    VerificationToken *string `gorm:"size:50;" json:"-"`
+    Image             *string `gorm:"size:500;" json:"image"`
+    Admin             uint8   `gorm:"type:boolean;not null;default:0" json:"admin"`
+
+    // Time
+    CreatedAt time.Time      `gorm:"type:datetime(0)" json:"created_at"`
+    UpdatedAt time.Time      `gorm:"type:datetime(0)"  json:"updated_at"`
+    DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+/**
+ * VerifyPassword
+ *
+ * @param string , string
+ * @return error
+ */
+func (u *User) VerifyPassword(password string) bool {
+    err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+    return err == nil
+}
+
+/**
+ * IsVerified
+ *
+ * @return bool
+ */
+func (u *User) IsVerified() bool {
+    return u.Verified == 1
+}
+
+/**
+ * IsAdmin
+ *
+ * @return bool
+ */
+func (u *User) IsAdmin() bool {
+    return u.Admin == 1
+}
+
+/**
+ * Scopes
+ *
+ * @return *gorm.DB
+ */
+func (User) VerifiedScope(db *gorm.DB) *gorm.DB {
+    return db.Where("users.verified = 1")
+}
+
+```
 
 ## Controllers
 
@@ -247,6 +312,8 @@ var ControllerDefs = []dingo.Def{
 ```
 
 ## ViewModels
+
+View models are the model to be used as the response return of the API call
 
 #### Example
 
@@ -489,9 +556,19 @@ func (p *Provider) Load() error {
 ```
 
 ## Container
-If you do not know if DI could help improving your application, learn more about dependency injection and dependency injection containers:
+The container part is the part that all of our objects are injected through interfaces, as we specified in definations. With the app.Application.Container call, we can access the objects we have created.
+
+check out for more;
 
 - [What is a dependency injection container and why use one ?](https://www.sarulabs.com/post/2/2018-06-12/what-is-a-dependency-injection-container-and-why-use-one.html)
+
+## Routers
+routers/api.go
+
+This is where we connect the appropriate route to process the http request.
+
+Check out echo https://echo.labstack.com/guide
+
 
 ## Database
 
