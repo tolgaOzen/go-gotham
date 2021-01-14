@@ -333,6 +333,62 @@ Middlewares work before the request reaches the controller.
 These are the parts where you can perform authorization check, record requests, limit the number of requests, etc.
 Middlewares can implement service interfaces. This way, they can check the data.
 
+#### Injection
+
+defs/middlewares.go
+
+```go
+var MiddlewareDefs = []dingo.Def{
+    {
+        Name:  "is-admin-middleware",
+        Scope: di.App,
+        Build: func(repository services.IUserService) (s GMiddleware.IsAdmin, err error) {
+            return GMiddleware.IsAdmin{UserService: repository}, nil
+        },
+        Params: dingo.Params{
+        "0": dingo.Service("user-service"),
+        },
+    },
+    {
+        Name:  "is-verified-middleware",
+        Scope: di.App,
+        Build: func(repository services.IUserService) (s GMiddleware.IsVerified , err error) {
+            return GMiddleware.IsVerified{UserService: repository}, nil
+        },
+        Params: dingo.Params{
+        "0": dingo.Service("user-service"),
+        },
+    },
+}
+```
+
+middlewares/isVerified.go
+```go
+type IsVerified struct{
+    services.IUserService
+}
+
+func (i IsVerified) control(c echo.Context) (bool bool, err error) {
+    u := c.Get("user").(*jwt.Token)
+    claims := u.Claims.(*config.JwtCustomClaims)
+
+    user, err := i.FirstUserByID(int(claims.Id))
+    if err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return false, echo.ErrUnauthorized
+        }
+        return false, echo.ErrInternalServerError
+    }
+
+    if user.IsVerified() {
+        return true, nil
+    }
+
+    return false, errors.New("your email not verified")
+}
+
+```
+
 ### Conditional Middlewares
 The purpose of the conditional middlewares is to decrease the redundant code.
 If we want authenticated user to be admin or verified user we supposed to have written a code with middleware such as isAdminOrIsVerified. In another scenario, we could have wanted authenticated user to be an admin and verified. For this reason we should have written isAdminAndVerified middleware.
@@ -412,61 +468,7 @@ r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.
 ```
 Authenticated user must be admin and verified
 
-#### Injection
 
-defs/middlewares.go
-
-```go
-var MiddlewareDefs = []dingo.Def{
-    {
-        Name:  "is-admin-middleware",
-        Scope: di.App,
-        Build: func(repository services.IUserService) (s GMiddleware.IsAdmin, err error) {
-            return GMiddleware.IsAdmin{UserService: repository}, nil
-        },
-        Params: dingo.Params{
-        "0": dingo.Service("user-service"),
-        },
-    },
-    {
-        Name:  "is-verified-middleware",
-        Scope: di.App,
-        Build: func(repository services.IUserService) (s GMiddleware.IsVerified , err error) {
-            return GMiddleware.IsVerified{UserService: repository}, nil
-        },
-        Params: dingo.Params{
-        "0": dingo.Service("user-service"),
-        },
-    },
-}
-```
-
-middlewares/isVerified.go
-```go
-type IsVerified struct{
-    services.IUserService
-}
-
-func (i IsVerified) control(c echo.Context) (bool bool, err error) {
-    u := c.Get("user").(*jwt.Token)
-    claims := u.Claims.(*config.JwtCustomClaims)
-
-    user, err := i.FirstUserByID(int(claims.Id))
-    if err != nil {
-        if errors.Is(err, gorm.ErrRecordNotFound) {
-            return false, echo.ErrUnauthorized
-        }
-        return false, echo.ErrInternalServerError
-    }
-
-    if user.IsVerified() {
-        return true, nil
-    }
-
-    return false, errors.New("your email not verified")
-}
-
-```
 
 ## Definitions
 The definition consists of parts where we write the dependencies required to create the object and where we can determine the life cycles of objects.
