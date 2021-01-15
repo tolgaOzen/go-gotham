@@ -17,16 +17,16 @@ I have designed go-gotham boilerplate adhering to SOLID principles for developer
 ![GitHub last commit](https://img.shields.io/github/last-commit/tolgaozen/go-gotham)
 
 - [Install](#install)
-- [Repositories](#repositories)
-- [Services](#services)
 - [Controllers](#controllers)
-- [Models](#models)
-- [ViewModels](#viewModels)
+- [Services](#services)
+- [Repositories](#repositories)
 - [Middlewares](#conditional-middlewares):
   * [Conditional Middlewares](#conditional-middlewares)
 - [Definitions](#definitions)
 - [Provider](#provider)
 - [Container](#container)
+- [Models](#models)
+- [ViewModels](#viewModels)
 - [Routers](#routers)
 - [Database](#database)
     * [Migrations](#migrations)
@@ -49,190 +49,6 @@ You can start using this repository by cloning it.
 
 ```
 git clone https://github.com/tolgaOzen/go-gotham
-```
-
-## Repositories
-
-The repositories folder is the data access layer. All database queries made must be performed in the repositories.
-
-### Examples
-
-repositories/userRepository.go
-```go
-type IUserRepository interface {
-	GetUserByID(id int) (models.User, error)
-	GetUserByEmail(email string) (models.User, error)
-	GetUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
-	GetUsersCount() (int64, error)
-}
-
-type UserRepository struct {
-	DB *gorm.DB
-}
-
-func (repository *UserRepository) GetUserByID(id int) (user models.User, err error) {
-	err = repository.DB.First(&user, id).Error
-	return
-}
-
-func (repository *UserRepository) GetUserByEmail(email string) (user models.User, err error) {
-	err = repository.DB.Where("email = ?", email).First(&user).Error
-	return
-}
-
-func (repository *UserRepository) GetUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
-	err = repository.DB.Scopes(pagination.Paginate(models.User{} , orderDefault)).Find(&users).Error
-	return
-}
-
-func (repository *UserRepository) GetUsersCount() (count int64, err error) {
-	// you can user getUsersCount procedure here
-	err = repository.DB.Model(&models.User{}).Count(&count).Error
-	return
-}
-```
-
-### Injection
-The database dependency of the repositories is injected into the defs folder.
-
-defs/userService.go
-```go
-var UserServiceDefs = []dingo.Def{
-    {
-        Name:  "user-repository",
-        Scope: di.App,
-        Build: func(db *gorm.DB) (s repositories.IUserRepository, err error) {
-          return &repositories.UserRepository{DB: db}, nil
-        },
-        Params: dingo.Params{
-          "0": dingo.Service("db"),
-       },
-    },
-    . 
-    .
-    .
-}
-```
-
-## Services
-The services folder is where the business logic is based. It is responsible for processing the request from the controller. It takes data from the data layer (repositories) and works to meet what the controller expects.
-
-### Example
-
-services/userService.go
-```go
-type IUserService interface {
-    GetUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
-    GetUserByID(id int) (models.User, error)
-    GetUserByEmail(email string) (models.User, error)
-    GetUsersCount() (int64, error)
-}
-
-type UserService struct {
-    UserRepository repositories.IUserRepository
-}
-
-func (service *UserService) GetUserByID(id int) (user models.User, err error) {
-    return service.UserRepository.GetUserByID(id)
-}
-
-func (service *UserService) GetUserByEmail(email string) (user models.User, err error) {
-    return service.UserRepository.GetUserByEmail(email)
-}
-
-func (service *UserService) GetUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
-    return service.UserRepository.GetUsers(pagination, orderDefault)
-}
-
-func (service *UserService) GetUsersCount() (count int64, err error) {
-    return service.UserRepository.GetUsersCount()
-}
-```
-
-
-### Injection
-The data layer interface dependency of the services is injected in the defs folder.
-
-defs/userService.go
-```go
-var UserServiceDefs = []dingo.Def{
-    .
-    .
-    .
-    {
-        Name:  "user-service",
-        Scope: di.App,
-        Build: func(repository repositories.IUserRepository) (s services.IUserService , err error) {
-            return &services.UserService{UserRepository: repository}, nil
-        },
-        Params: dingo.Params{
-            "0": dingo.Service("user-repository"),
-        },
-    },  
-}
-```
-## Models
-
-The models must be a reflection of our data objects. Only a few facilitating methods should be written to models.
-
-#### Example
-
-models/user.go
-```go
-type User struct {
-    ID                uint    `gorm:"primaryKey;auto_increment" json:"id"`
-    Name              string  `gorm:"size:255;not null" json:"name"`
-    Email             string  `gorm:"size:100;not null;unique;unique_index" json:"email"`
-    Password          string  `gorm:"size:100" json:"-"`
-    Verified          uint8   `gorm:"type:boolean" json:"verified"`
-    VerificationToken *string `gorm:"size:50;" json:"-"`
-    Image             *string `gorm:"size:500;" json:"image"`
-    Admin             uint8   `gorm:"type:boolean;not null;default:0" json:"admin"`
-
-    // Time
-    CreatedAt time.Time      `gorm:"type:datetime(0)" json:"created_at"`
-    UpdatedAt time.Time      `gorm:"type:datetime(0)"  json:"updated_at"`
-    DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
-}
-
-/**
- * VerifyPassword
- *
- * @param string , string
- * @return error
- */
-func (u *User) VerifyPassword(password string) bool {
-    err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
-    return err == nil
-}
-
-/**
- * IsVerified
- *
- * @return bool
- */
-func (u *User) IsVerified() bool {
-    return u.Verified == 1
-}
-
-/**
- * IsAdmin
- *
- * @return bool
- */
-func (u *User) IsAdmin() bool {
-    return u.Admin == 1
-}
-
-/**
- * Scopes
- *
- * @return *gorm.DB
- */
-func (User) VerifiedScope(db *gorm.DB) *gorm.DB {
-    return db.Where("users.verified = 1")
-}
-
 ```
 
 ## Controllers
@@ -312,19 +128,124 @@ var ControllerDefs = []dingo.Def{
 }
 ```
 
-## ViewModels
+## Services
+The services folder is where the business logic is based. It is responsible for processing the request from the controller. It takes data from the data layer (repositories) and works to meet what the controller expects.
 
-View models are the model to be used as the response return of the API call
+### Example
 
-#### Example
-
-viewModels/paginator.go
+services/userService.go
 ```go
-type Paginator struct {
-    TotalRecord int         `json:"total_record"`
-    Records     interface{} `json:"records"`
-    Limit       int         `json:"limit"`
-    Page        int         `json:"page"`
+type IUserService interface {
+    GetUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
+    GetUserByID(id int) (models.User, error)
+    GetUserByEmail(email string) (models.User, error)
+    GetUsersCount() (int64, error)
+}
+
+type UserService struct {
+    UserRepository repositories.IUserRepository
+}
+
+func (service *UserService) GetUserByID(id int) (user models.User, err error) {
+    return service.UserRepository.GetUserByID(id)
+}
+
+func (service *UserService) GetUserByEmail(email string) (user models.User, err error) {
+    return service.UserRepository.GetUserByEmail(email)
+}
+
+func (service *UserService) GetUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
+    return service.UserRepository.GetUsers(pagination, orderDefault)
+}
+
+func (service *UserService) GetUsersCount() (count int64, err error) {
+    return service.UserRepository.GetUsersCount()
+}
+```
+
+
+### Injection
+The data layer interface dependency of the services is injected in the defs folder.
+
+defs/userService.go
+```go
+var UserServiceDefs = []dingo.Def{
+    .
+    .
+    .
+    {
+        Name:  "user-service",
+        Scope: di.App,
+        Build: func(repository repositories.IUserRepository) (s services.IUserService , err error) {
+            return &services.UserService{UserRepository: repository}, nil
+        },
+        Params: dingo.Params{
+            "0": dingo.Service("user-repository"),
+        },
+    },  
+}
+```
+
+## Repositories
+
+The repositories folder is the data access layer. All database queries made must be performed in the repositories.
+
+### Examples
+
+repositories/userRepository.go
+```go
+type IUserRepository interface {
+	GetUserByID(id int) (models.User, error)
+	GetUserByEmail(email string) (models.User, error)
+	GetUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
+	GetUsersCount() (int64, error)
+}
+
+type UserRepository struct {
+	DB *gorm.DB
+}
+
+func (repository *UserRepository) GetUserByID(id int) (user models.User, err error) {
+	err = repository.DB.First(&user, id).Error
+	return
+}
+
+func (repository *UserRepository) GetUserByEmail(email string) (user models.User, err error) {
+	err = repository.DB.Where("email = ?", email).First(&user).Error
+	return
+}
+
+func (repository *UserRepository) GetUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
+	err = repository.DB.Scopes(pagination.Paginate(models.User{} , orderDefault)).Find(&users).Error
+	return
+}
+
+func (repository *UserRepository) GetUsersCount() (count int64, err error) {
+	// you can user getUsersCount procedure here
+	err = repository.DB.Model(&models.User{}).Count(&count).Error
+	return
+}
+```
+
+### Injection
+The database dependency of the repositories is injected into the defs folder.
+
+defs/userService.go
+```go
+var UserServiceDefs = []dingo.Def{
+    {
+        Name:  "user-repository",
+        Scope: di.App,
+        Build: func(db *gorm.DB) (s repositories.IUserRepository, err error) {
+          return &repositories.UserRepository{DB: db}, nil
+        },
+        Params: dingo.Params{
+          "0": dingo.Service("db"),
+       },
+    },
+    . 
+    .
+    .
 }
 ```
 
@@ -441,8 +362,6 @@ Authenticated user must be admin or verified
 r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And([]GMiddleware.IMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
 ```
 Authenticated user must be admin and verified
-
-
 
 ## Definitions
 The definition consists of parts where we write the dependencies required to create the object and where we can determine the life cycles of objects.
@@ -598,13 +517,92 @@ check out for more;
 
 - [What is a dependency injection container and why use one ?](https://www.sarulabs.com/post/2/2018-06-12/what-is-a-dependency-injection-container-and-why-use-one.html)
 
+## Models
+
+The models must be a reflection of our data objects. Only a few facilitating methods should be written to models.
+
+#### Example
+
+models/user.go
+```go
+type User struct {
+    ID                uint    `gorm:"primaryKey;auto_increment" json:"id"`
+    Name              string  `gorm:"size:255;not null" json:"name"`
+    Email             string  `gorm:"size:100;not null;unique;unique_index" json:"email"`
+    Password          string  `gorm:"size:100" json:"-"`
+    Verified          uint8   `gorm:"type:boolean" json:"verified"`
+    VerificationToken *string `gorm:"size:50;" json:"-"`
+    Image             *string `gorm:"size:500;" json:"image"`
+    Admin             uint8   `gorm:"type:boolean;not null;default:0" json:"admin"`
+
+    // Time
+    CreatedAt time.Time      `gorm:"type:datetime(0)" json:"created_at"`
+    UpdatedAt time.Time      `gorm:"type:datetime(0)"  json:"updated_at"`
+    DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+/**
+ * VerifyPassword
+ *
+ * @param string , string
+ * @return error
+ */
+func (u *User) VerifyPassword(password string) bool {
+    err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+    return err == nil
+}
+
+/**
+ * IsVerified
+ *
+ * @return bool
+ */
+func (u *User) IsVerified() bool {
+    return u.Verified == 1
+}
+
+/**
+ * IsAdmin
+ *
+ * @return bool
+ */
+func (u *User) IsAdmin() bool {
+    return u.Admin == 1
+}
+
+/**
+ * Scopes
+ *
+ * @return *gorm.DB
+ */
+func (User) VerifiedScope(db *gorm.DB) *gorm.DB {
+    return db.Where("users.verified = 1")
+}
+
+```
+
+## ViewModels
+
+View models are the model to be used as the response return of the API call
+
+#### Example
+
+viewModels/paginator.go
+```go
+type Paginator struct {
+    TotalRecord int         `json:"total_record"`
+    Records     interface{} `json:"records"`
+    Limit       int         `json:"limit"`
+    Page        int         `json:"page"`
+}
+```
+
 ## Routers
 routers/api.go
 
 This is where we connect the appropriate route to process the http request.
 
 Check out echo https://echo.labstack.com/guide
-
 
 ## Database
 
