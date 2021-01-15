@@ -50,12 +50,3 @@ func (u *User) IsVerified() bool {
 func (u *User) IsAdmin() bool {
 	return u.Admin == 1
 }
-
-/**
- * Scopes
- *
- * @return *gorm.DB
- */
-func (User) VerifiedScope(db *gorm.DB) *gorm.DB {
-	return db.Where("users.verified = 1")
-}
