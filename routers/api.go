@@ -36,8 +36,8 @@ func Route(e *echo.Echo) {
 	r.Use(middleware.JWTWithConfig(c))
 
 	//user
-	r.GET("/users/:user", app.Application.Container.GetUserController().Show,GMiddleware.Or([]GMiddleware.IMiddleware{app.Application.Container.GetIsVerifiedMiddleware()}))
-	r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And([]GMiddleware.IMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
+	r.GET("/users/:user", app.Application.Container.GetUserController().Show,GMiddleware.Or([]GMiddleware.IConditionalMiddleware{app.Application.Container.GetIsVerifiedMiddleware()}))
+	r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And([]GMiddleware.IConditionalMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
 
 	s := &http.Server{
 		Addr: ":" + config.Conf.Port,

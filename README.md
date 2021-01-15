@@ -101,7 +101,7 @@ func (u UserController) Index(c echo.Context) (err error) {
 
 routes/api.go
 ```go
-r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And([]GMiddleware.IMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
+r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And([]GMiddleware.IConditionalMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
 ```
 
 #### Injection
@@ -352,14 +352,14 @@ func (i IsVerified) control(c echo.Context) (bool bool, err error) {
 #### OR
 
 ```go
-r.GET("/users/:user", app.Application.Container.GetUserController().Show,GMiddleware.Or([]GMiddleware.IMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
+r.GET("/users/:user", app.Application.Container.GetUserController().Show,GMiddleware.Or([]GMiddleware.IConditionalMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
 ```
 Authenticated user must be admin or verified
 
 #### AND
 
 ```go
-r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And([]GMiddleware.IMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
+r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And([]GMiddleware.IConditionalMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
 ```
 Authenticated user must be admin and verified
 

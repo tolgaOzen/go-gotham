@@ -6,12 +6,12 @@ import (
 	"net/http"
 )
 
-type IMiddleware interface {
+type IConditionalMiddleware interface {
 	control(c echo.Context) (bool, error)
 }
 
 // Conditional Middlewares
-func Or(middleware []IMiddleware) echo.MiddlewareFunc {
+func Or(middleware []IConditionalMiddleware) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			var msg = "You cannot access"
@@ -30,7 +30,7 @@ func Or(middleware []IMiddleware) echo.MiddlewareFunc {
 	}
 }
 
-func And(middleware []IMiddleware) echo.MiddlewareFunc {
+func And(middleware []IConditionalMiddleware) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			var msg = "You cannot access"
