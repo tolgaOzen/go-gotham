@@ -1,6 +1,6 @@
 ![gotham](https://user-images.githubusercontent.com/39353278/103892416-99f6c880-50fc-11eb-8869-af197ca81fd1.png)
 
-I have designed go-gotham boilerplate adhering to SOLID principles for developers to help them create RESTful API. I take advantage of some other libraries however, I did not neglect to add my codes into it. The aim of this boilerplate is to provide developers with scaffolding and common functionality which will make writing APIs efficient, convenient and testable.
+I have designed go-gotham boilerplate adhering to SOLID principles for developers to help them create RESTful API. I take advantage of some other libraries however, I did not neglect to add my codes into it. The aim of this boilerplate is to provide developers a common functionality which will make writing APIs efficient, convenient and testable.
 
 ## Check out the documentation of supporting projects 
 
