@@ -240,7 +240,7 @@ var UserServiceDefs = []dingo.Def{
           return &repositories.UserRepository{DB: db}, nil
         },
         Params: dingo.Params{
-          "0": dingo.Service("db"),
+            "0": dingo.Service("db"),
        },
     },
     . 
@@ -252,7 +252,7 @@ var UserServiceDefs = []dingo.Def{
 ## Middlewares
 
 Middlewares work before the request reaches the controller.
-These are the parts where you can perform authorization check, record requests, limit the number of requests, etc.
+These are the parts where you can perform authorization check, record requests, limit the number of requests etc.
 Middlewares can implement service interfaces. This way, they can check the data.
 
 #### Injection
@@ -268,7 +268,7 @@ var MiddlewareDefs = []dingo.Def{
             return GMiddleware.IsAdmin{UserService: repository}, nil
         },
         Params: dingo.Params{
-        "0": dingo.Service("user-service"),
+            "0": dingo.Service("user-service"),
         },
     },
     {
@@ -278,7 +278,7 @@ var MiddlewareDefs = []dingo.Def{
             return GMiddleware.IsVerified{UserService: repository}, nil
         },
         Params: dingo.Params{
-        "0": dingo.Service("user-service"),
+            "0": dingo.Service("user-service"),
         },
     },
 }
@@ -412,7 +412,7 @@ var ControllerDefs = []dingo.Def{
 		},
 	},
 	{
-		Name:  "auth-controller",
+	    Name:  "auth-controller",
 		Scope: di.App,
 		Build: func(service services.IAuthService) (controllers.AuthController, error) {
 			return controllers.AuthController{
@@ -429,26 +429,26 @@ var ControllerDefs = []dingo.Def{
 app/defs/middlewares.go
 ```go
 var MiddlewareDefs = []dingo.Def{
-        {
-                Name:  "is-admin-middleware",
-                Scope: di.App,
-                Build: func(repository services.IUserService) (s GMiddleware.IsAdmin, err error) {
-                       return GMiddleware.IsAdmin{IUserService: repository}, nil
-                },
-                Params: dingo.Params{
-                     "0": dingo.Service("user-service"),
-                },
+    {
+        Name:  "is-admin-middleware",
+        Scope: di.App,
+        Build: func(repository services.IUserService) (s GMiddleware.IsAdmin, err error) {
+            return GMiddleware.IsAdmin{IUserService: repository}, nil
         },
-        {
-                Name:  "is-verified-middleware",
-                Scope: di.App,
-                Build: func(repository services.IUserService) (s GMiddleware.IsVerified , err error) {
-                        return GMiddleware.IsVerified{IUserService: repository}, nil
-                },
-                Params: dingo.Params{
-                        "0": dingo.Service("user-service"),
-                },
+        Params: dingo.Params{
+            "0": dingo.Service("user-service"),
         },
+    },
+    {
+    	Name:  "is-verified-middleware",
+        Scope: di.App,
+        Build: func(repository services.IUserService) (s GMiddleware.IsVerified , err error) {
+            return GMiddleware.IsVerified{IUserService: repository}, nil
+        },
+        Params: dingo.Params{
+            "0": dingo.Service("user-service"),
+        },
+    },
 }
 ```
 
