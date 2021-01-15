@@ -115,7 +115,6 @@ var UserServiceDefs = []dingo.Def{
 ```
 
 ## Services
-
 The services folder is where the business logic is based. It is responsible for processing the request from the controller. It takes data from the data layer (repositories) and works to meet what the controller expects.
 
 ### Example
@@ -152,7 +151,7 @@ func (service *UserService) GetUsersCount() (count int64, err error) {
 
 
 ### Injection
-The data layer dependency of the services is injected in the defs folder.
+The data layer interface dependency of the services is injected in the defs folder.
 
 defs/userService.go
 ```go
@@ -290,6 +289,7 @@ r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.
 ```
 
 #### Injection
+The service interface dependency of the controllers is injected in the defs folder.
 
 defs/controllers.go
 ```go
@@ -335,9 +335,9 @@ These are the parts where you can perform authorization check, record requests, 
 Middlewares can implement service interfaces. This way, they can check the data.
 
 #### Injection
+The service interface dependency of the middlewares is injected in the defs folder.
 
 defs/middlewares.go
-
 ```go
 var MiddlewareDefs = []dingo.Def{
     {
