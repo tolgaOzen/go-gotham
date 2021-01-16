@@ -169,7 +169,7 @@ The data layer interface dependency of the services is injected in the defs fold
 
 defs/services.go
 ```go
-var UserServiceDefs = []dingo.Def{
+var ServicesDefs = []dingo.Def{
     .
     .
     .
@@ -367,26 +367,26 @@ The definition consists of parts where we write the dependencies required to cre
 app/defs/database.go
 ```go
 var DatabaseServiceDefs = []dingo.Def{
-	{
-		Name:  "db-pool",
-		Scope: di.App,
-		Build: func() (infrastructures.IGormDatabasePool, error) {
-			return infrastructures.NewGormDatabasePool(config.GetDbConfig()), nil
-		},
-		NotForAutoFill: true,
+    {
+        Name:  "db-pool",
+        Scope: di.App,
+        Build: func() (infrastructures.IGormDatabasePool, error) {
+            return infrastructures.NewGormDatabasePool(config.GetDbConfig()), nil
+        },
+        NotForAutoFill: true,
 	},
 	{
-		Name:  "db",
-		Scope: di.App,
-		Build: func(pool infrastructures.IGormDatabasePool) (infrastructures.IGormDatabase,error) {
-			return infrastructures.NewGormDatabase(pool)
-		},
-		Params: dingo.Params{
-			"0": dingo.Service("db-pool"),
-		},
-		Close: func(db infrastructures.IGormDatabase) error {
-			gormDB, _ := db.DB().DB()
-			return gormDB.Close()
+        Name:  "db",
+        Scope: di.App,
+        Build: func(pool infrastructures.IGormDatabasePool) (infrastructures.IGormDatabase,error) {
+            return infrastructures.NewGormDatabase(pool)
+        },
+        Params: dingo.Params{
+            "0": dingo.Service("db-pool"),
+        },
+        Close: func(db infrastructures.IGormDatabase) error {
+            gormDB, _ := db.DB().DB()
+            return gormDB.Close()
 		},
 	},
 }
@@ -395,37 +395,37 @@ Like the example above, the db object is dependent on the dp-pool object. While 
 
 app/defs/controllers.go
 ```go
-var ControllerDefs = []dingo.Def{
-	{
-		Name:  "user-controller",
-		Scope: di.App,
-		Build: func(service services.IUserService) (controllers.UserController, error) {
-			return controllers.UserController{
-				IUserService: service,
-			}, nil
-		},
-		Params: dingo.Params{
-			"0": dingo.Service("user-service"),
-		},
-	},
-	{
-	    Name:  "auth-controller",
-		Scope: di.App,
-		Build: func(service services.IAuthService) (controllers.AuthController, error) {
-			return controllers.AuthController{
-				IAuthService: service,
-			}, nil
-		},
-		Params: dingo.Params{
-			"0": dingo.Service("auth-service"),
-		},
-	},
+var ControllersDefs = []dingo.Def{
+    {
+        Name:  "user-controller",
+        Scope: di.App,
+        Build: func(service services.IUserService) (controllers.UserController, error) {
+            return controllers.UserController{
+                IUserService: service,
+            }, nil
+        },
+        Params: dingo.Params{
+            "0": dingo.Service("user-service"),
+        },
+    },
+    {
+        Name:  "auth-controller",
+        Scope: di.App,
+        Build: func(service services.IAuthService) (controllers.AuthController, error) {
+            return controllers.AuthController{
+                IAuthService: service,
+            }, nil
+        },
+        Params: dingo.Params{
+            "0": dingo.Service("auth-service"),
+        },
+    },
 }
 ```
 
 app/defs/middlewares.go
 ```go
-var MiddlewareDefs = []dingo.Def{
+var MiddlewaresDefs = []dingo.Def{
     {
         Name:  "is-admin-middleware",
         Scope: di.App,
@@ -452,7 +452,7 @@ var MiddlewareDefs = []dingo.Def{
 
 app/defs/services.go
 ```go
-var ServiceDefs = []dingo.Def{
+var ServicesDefs = []dingo.Def{
     {
         Name:  "auth-service",
         Scope: di.App,
@@ -500,7 +500,7 @@ You will have to write the service definitions and register them in a Provider.
 app/provider/appServiceProvider.go
 ```go
 func (p *Provider) Load() error {
-    if err := p.AddDefSlice(defs.DatabaseServiceDefs); err != nil {
+    if err := p.AddDefSlice(defs.InfrastructuresDefs); err != nil {
         return err
     }
 
@@ -508,15 +508,15 @@ func (p *Provider) Load() error {
         return err
     }
 
-    if err := p.AddDefSlice(defs.ServiceDefs); err != nil {
+    if err := p.AddDefSlice(defs.ServicesDefs); err != nil {
         return err
     }
 
-    if err := p.AddDefSlice(defs.ControllerDefs); err != nil {
+    if err := p.AddDefSlice(defs.ControllersDefs); err != nil {
         return err
     }
 
-    if err := p.AddDefSlice(defs.MiddlewareDefs); err != nil {
+    if err := p.AddDefSlice(defs.MiddlewaresDefs); err != nil {
         return err
     }
     
@@ -783,14 +783,14 @@ Check out ozzo-validation library https://github.com/go-ozzo/ozzo-validation
 rules/stringEquals.go
 ```go
 func StringEquals(str string) validation.RuleFunc {
-return func (value interface{}) error {
-    s, _ := value.(string)
+    return func (value interface{}) error {
+        s, _ := value.(string)
 
-    if s != str {
-       return errors.New("unexpected string")
-    }
+        if s != str {
+           return errors.New("unexpected string")
+        }
 
-    return nil
+        return nil
     }
 }
 ```
