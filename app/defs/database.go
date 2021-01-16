@@ -3,32 +3,31 @@ package defs
 import (
 	"github.com/sarulabs/di/v2"
 	"github.com/sarulabs/dingo/v4"
-	"gorm.io/gorm"
 	"gotham/config"
-	"gotham/services"
+	"gotham/infrastructures"
 )
 
 var DatabaseServiceDefs = []dingo.Def{
 	{
 		Name:  "db-pool",
 		Scope: di.App,
-		Build: func() (gorm.Dialector, error) {
-			return services.NewDatabaseService(config.GetDbConfig()).OpenDatabase(), nil
+		Build: func() (infrastructures.IGormDatabasePool, error) {
+			return infrastructures.NewGormDatabasePool(config.GetDbConfig()), nil
 		},
 		NotForAutoFill: true,
 	},
 	{
 		Name:  "db",
 		Scope: di.App,
-		Build: func(dia gorm.Dialector) (db *gorm.DB,err error) {
-			return services.DatabaseService{}.ConnectDatabase(dia)
+		Build: func(pool infrastructures.IGormDatabasePool) (infrastructures.IGormDatabase,error) {
+			return infrastructures.NewGormDatabase(pool)
 		},
 		Params: dingo.Params{
 			"0": dingo.Service("db-pool"),
 		},
-		Close: func(db *gorm.DB) error {
-			sqlDB, _ := db.DB()
-			return sqlDB.Close()
+		Close: func(db infrastructures.IGormDatabase) error {
+			gormDB, _ := db.DB().DB()
+			return gormDB.Close()
 		},
 	},
 }

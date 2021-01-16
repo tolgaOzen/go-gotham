@@ -18,11 +18,11 @@ func (p *Provider) Load() error {
 		return err
 	}
 
-	if err := p.AddDefSlice(defs.UserServiceDefs); err != nil {
+	if err := p.AddDefSlice(defs.RepositoriesDefs); err != nil {
 		return err
 	}
 
-	if err := p.AddDefSlice(defs.AuthServiceDefs); err != nil {
+	if err := p.AddDefSlice(defs.ServiceDefs); err != nil {
 		return err
 	}
 

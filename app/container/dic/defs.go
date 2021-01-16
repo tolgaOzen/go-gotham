@@ -7,11 +7,10 @@ import (
 	"github.com/sarulabs/dingo/v4"
 
 	controllers "gotham/controllers"
+	infrastructures "gotham/infrastructures"
 	middlewares "gotham/middlewares"
 	repositories "gotham/repositories"
 	services "gotham/services"
-
-	gorm "gorm.io/gorm"
 )
 
 func getDiDefs(provider dingo.Provider) []di.Def {
@@ -82,23 +81,23 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 			Build: func(ctn di.Container) (interface{}, error) {
 				d, err := provider.Get("db")
 				if err != nil {
-					var eo *gorm.DB
+					var eo infrastructures.IGormDatabase
 					return eo, err
 				}
 				pi0, err := ctn.SafeGet("db-pool")
 				if err != nil {
-					var eo *gorm.DB
+					var eo infrastructures.IGormDatabase
 					return eo, err
 				}
-				p0, ok := pi0.(gorm.Dialector)
+				p0, ok := pi0.(infrastructures.IGormDatabasePool)
 				if !ok {
-					var eo *gorm.DB
-					return eo, errors.New("could not cast parameter 0 to gorm.Dialector")
+					var eo infrastructures.IGormDatabase
+					return eo, errors.New("could not cast parameter 0 to infrastructures.IGormDatabasePool")
 				}
-				b, ok := d.Build.(func(gorm.Dialector) (*gorm.DB, error))
+				b, ok := d.Build.(func(infrastructures.IGormDatabasePool) (infrastructures.IGormDatabase, error))
 				if !ok {
-					var eo *gorm.DB
-					return eo, errors.New("could not cast build function to func(gorm.Dialector) (*gorm.DB, error)")
+					var eo infrastructures.IGormDatabase
+					return eo, errors.New("could not cast build function to func(infrastructures.IGormDatabasePool) (infrastructures.IGormDatabase, error)")
 				}
 				return b(p0)
 			},
@@ -107,13 +106,13 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 				if err != nil {
 					return err
 				}
-				c, ok := d.Close.(func(*gorm.DB) error)
+				c, ok := d.Close.(func(infrastructures.IGormDatabase) error)
 				if !ok {
-					return errors.New("could not cast close function to 'func(*gorm.DB) error'")
+					return errors.New("could not cast close function to 'func(infrastructures.IGormDatabase) error'")
 				}
-				o, ok := obj.(*gorm.DB)
+				o, ok := obj.(infrastructures.IGormDatabase)
 				if !ok {
-					return errors.New("could not cast object to '*gorm.DB'")
+					return errors.New("could not cast object to 'infrastructures.IGormDatabase'")
 				}
 				return c(o)
 			},
@@ -124,13 +123,13 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 			Build: func(ctn di.Container) (interface{}, error) {
 				d, err := provider.Get("db-pool")
 				if err != nil {
-					var eo gorm.Dialector
+					var eo infrastructures.IGormDatabasePool
 					return eo, err
 				}
-				b, ok := d.Build.(func() (gorm.Dialector, error))
+				b, ok := d.Build.(func() (infrastructures.IGormDatabasePool, error))
 				if !ok {
-					var eo gorm.Dialector
-					return eo, errors.New("could not cast build function to func() (gorm.Dialector, error)")
+					var eo infrastructures.IGormDatabasePool
+					return eo, errors.New("could not cast build function to func() (infrastructures.IGormDatabasePool, error)")
 				}
 				return b()
 			},
@@ -242,15 +241,15 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 					var eo repositories.IUserRepository
 					return eo, err
 				}
-				p0, ok := pi0.(*gorm.DB)
+				p0, ok := pi0.(infrastructures.IGormDatabase)
 				if !ok {
 					var eo repositories.IUserRepository
-					return eo, errors.New("could not cast parameter 0 to *gorm.DB")
+					return eo, errors.New("could not cast parameter 0 to infrastructures.IGormDatabase")
 				}
-				b, ok := d.Build.(func(*gorm.DB) (repositories.IUserRepository, error))
+				b, ok := d.Build.(func(infrastructures.IGormDatabase) (repositories.IUserRepository, error))
 				if !ok {
 					var eo repositories.IUserRepository
-					return eo, errors.New("could not cast build function to func(*gorm.DB) (repositories.IUserRepository, error)")
+					return eo, errors.New("could not cast build function to func(infrastructures.IGormDatabase) (repositories.IUserRepository, error)")
 				}
 				return b(p0)
 			},

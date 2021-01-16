@@ -11,11 +11,10 @@ import (
 	providerPkg "gotham/app/provider"
 
 	controllers "gotham/controllers"
+	infrastructures "gotham/infrastructures"
 	middlewares "gotham/middlewares"
 	repositories "gotham/repositories"
 	services "gotham/services"
-
-	gorm "gorm.io/gorm"
 )
 
 // C retrieves a Container from an interface.
@@ -337,23 +336,23 @@ func AuthService(i interface{}) services.IAuthService {
 }
 
 // SafeGetDb works like SafeGet but only for Db.
-// It does not return an interface but a *gorm.DB.
-func (c *Container) SafeGetDb() (*gorm.DB, error) {
+// It does not return an interface but a infrastructures.IGormDatabase.
+func (c *Container) SafeGetDb() (infrastructures.IGormDatabase, error) {
 	i, err := c.ctn.SafeGet("db")
 	if err != nil {
-		var eo *gorm.DB
+		var eo infrastructures.IGormDatabase
 		return eo, err
 	}
-	o, ok := i.(*gorm.DB)
+	o, ok := i.(infrastructures.IGormDatabase)
 	if !ok {
-		return o, errors.New("could get 'db' because the object could not be cast to *gorm.DB")
+		return o, errors.New("could get 'db' because the object could not be cast to infrastructures.IGormDatabase")
 	}
 	return o, nil
 }
 
 // GetDb is similar to SafeGetDb but it does not return the error.
 // Instead it panics.
-func (c *Container) GetDb() *gorm.DB {
+func (c *Container) GetDb() infrastructures.IGormDatabase {
 	o, err := c.SafeGetDb()
 	if err != nil {
 		panic(err)
@@ -362,23 +361,23 @@ func (c *Container) GetDb() *gorm.DB {
 }
 
 // UnscopedSafeGetDb works like UnscopedSafeGet but only for Db.
-// It does not return an interface but a *gorm.DB.
-func (c *Container) UnscopedSafeGetDb() (*gorm.DB, error) {
+// It does not return an interface but a infrastructures.IGormDatabase.
+func (c *Container) UnscopedSafeGetDb() (infrastructures.IGormDatabase, error) {
 	i, err := c.ctn.UnscopedSafeGet("db")
 	if err != nil {
-		var eo *gorm.DB
+		var eo infrastructures.IGormDatabase
 		return eo, err
 	}
-	o, ok := i.(*gorm.DB)
+	o, ok := i.(infrastructures.IGormDatabase)
 	if !ok {
-		return o, errors.New("could get 'db' because the object could not be cast to *gorm.DB")
+		return o, errors.New("could get 'db' because the object could not be cast to infrastructures.IGormDatabase")
 	}
 	return o, nil
 }
 
 // UnscopedGetDb is similar to UnscopedSafeGetDb but it does not return the error.
 // Instead it panics.
-func (c *Container) UnscopedGetDb() *gorm.DB {
+func (c *Container) UnscopedGetDb() infrastructures.IGormDatabase {
 	o, err := c.UnscopedSafeGetDb()
 	if err != nil {
 		panic(err)
@@ -390,28 +389,28 @@ func (c *Container) UnscopedGetDb() *gorm.DB {
 // It tries to find the container with the C method and the given interface.
 // If the container can be retrieved, it applies the GetDb method.
 // If the container can not be retrieved, it panics.
-func Db(i interface{}) *gorm.DB {
+func Db(i interface{}) infrastructures.IGormDatabase {
 	return C(i).GetDb()
 }
 
 // SafeGetDbPool works like SafeGet but only for DbPool.
-// It does not return an interface but a gorm.Dialector.
-func (c *Container) SafeGetDbPool() (gorm.Dialector, error) {
+// It does not return an interface but a infrastructures.IGormDatabasePool.
+func (c *Container) SafeGetDbPool() (infrastructures.IGormDatabasePool, error) {
 	i, err := c.ctn.SafeGet("db-pool")
 	if err != nil {
-		var eo gorm.Dialector
+		var eo infrastructures.IGormDatabasePool
 		return eo, err
 	}
-	o, ok := i.(gorm.Dialector)
+	o, ok := i.(infrastructures.IGormDatabasePool)
 	if !ok {
-		return o, errors.New("could get 'db-pool' because the object could not be cast to gorm.Dialector")
+		return o, errors.New("could get 'db-pool' because the object could not be cast to infrastructures.IGormDatabasePool")
 	}
 	return o, nil
 }
 
 // GetDbPool is similar to SafeGetDbPool but it does not return the error.
 // Instead it panics.
-func (c *Container) GetDbPool() gorm.Dialector {
+func (c *Container) GetDbPool() infrastructures.IGormDatabasePool {
 	o, err := c.SafeGetDbPool()
 	if err != nil {
 		panic(err)
@@ -420,23 +419,23 @@ func (c *Container) GetDbPool() gorm.Dialector {
 }
 
 // UnscopedSafeGetDbPool works like UnscopedSafeGet but only for DbPool.
-// It does not return an interface but a gorm.Dialector.
-func (c *Container) UnscopedSafeGetDbPool() (gorm.Dialector, error) {
+// It does not return an interface but a infrastructures.IGormDatabasePool.
+func (c *Container) UnscopedSafeGetDbPool() (infrastructures.IGormDatabasePool, error) {
 	i, err := c.ctn.UnscopedSafeGet("db-pool")
 	if err != nil {
-		var eo gorm.Dialector
+		var eo infrastructures.IGormDatabasePool
 		return eo, err
 	}
-	o, ok := i.(gorm.Dialector)
+	o, ok := i.(infrastructures.IGormDatabasePool)
 	if !ok {
-		return o, errors.New("could get 'db-pool' because the object could not be cast to gorm.Dialector")
+		return o, errors.New("could get 'db-pool' because the object could not be cast to infrastructures.IGormDatabasePool")
 	}
 	return o, nil
 }
 
 // UnscopedGetDbPool is similar to UnscopedSafeGetDbPool but it does not return the error.
 // Instead it panics.
-func (c *Container) UnscopedGetDbPool() gorm.Dialector {
+func (c *Container) UnscopedGetDbPool() infrastructures.IGormDatabasePool {
 	o, err := c.UnscopedSafeGetDbPool()
 	if err != nil {
 		panic(err)
@@ -448,7 +447,7 @@ func (c *Container) UnscopedGetDbPool() gorm.Dialector {
 // It tries to find the container with the C method and the given interface.
 // If the container can be retrieved, it applies the GetDbPool method.
 // If the container can not be retrieved, it panics.
-func DbPool(i interface{}) gorm.Dialector {
+func DbPool(i interface{}) infrastructures.IGormDatabasePool {
 	return C(i).GetDbPool()
 }
 

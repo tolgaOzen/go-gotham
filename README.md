@@ -167,7 +167,7 @@ func (service *UserService) GetUsersCount() (count int64, err error) {
 ### Injection
 The data layer interface dependency of the services is injected in the defs folder.
 
-defs/userService.go
+defs/services.go
 ```go
 var UserServiceDefs = []dingo.Def{
     .
@@ -195,57 +195,55 @@ The repositories folder is the data access layer. All database queries made must
 repositories/userRepository.go
 ```go
 type IUserRepository interface {
-	GetUserByID(id int) (models.User, error)
-	GetUserByEmail(email string) (models.User, error)
-	GetUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
-	GetUsersCount() (int64, error)
+    GetUserByID(id int) (models.User, error)
+    GetUserByEmail(email string) (models.User, error)
+    GetUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
+    GetUsersCount() (int64, error)
 }
 
 type UserRepository struct {
-	DB *gorm.DB
+    infrastructures.IGormDatabase
 }
 
 func (repository *UserRepository) GetUserByID(id int) (user models.User, err error) {
-	err = repository.DB.First(&user, id).Error
-	return
+    err = repository.DB().First(&user, id).Error
+return
 }
 
 func (repository *UserRepository) GetUserByEmail(email string) (user models.User, err error) {
-	err = repository.DB.Where("email = ?", email).First(&user).Error
-	return
+    err = repository.DB().Where("email = ?", email).First(&user).Error
+return
 }
 
 func (repository *UserRepository) GetUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
-	err = repository.DB.Scopes(pagination.Paginate(models.User{} , orderDefault)).Find(&users).Error
-	return
+    err = repository.DB().Scopes(pagination.Paginate(models.User{} , orderDefault)).Find(&users).Error
+return
 }
 
 func (repository *UserRepository) GetUsersCount() (count int64, err error) {
-	// you can user getUsersCount procedure here
-	err = repository.DB.Model(&models.User{}).Count(&count).Error
-	return
+    // you can user getUsersCount procedure here
+    err = repository.DB().Model(&models.User{}).Count(&count).Error
+return
 }
-```
 
+```
+	
 ### Injection
 The database dependency of the repositories is injected into the defs folder.
 
-defs/userService.go
+defs/repositories.go
 ```go
-var UserServiceDefs = []dingo.Def{
+var RepositoriesDefs = []dingo.Def{
     {
         Name:  "user-repository",
         Scope: di.App,
-        Build: func(db *gorm.DB) (s repositories.IUserRepository, err error) {
-          return &repositories.UserRepository{DB: db}, nil
+        Build: func(gormDatabase infrastructures.IGormDatabase) (s repositories.IUserRepository, err error) {
+            return &repositories.UserRepository{IGormDatabase: gormDatabase}, nil
         },
         Params: dingo.Params{
             "0": dingo.Service("db"),
-       },
+        },
     },
-    . 
-    .
-    .
 }
 ```
 
@@ -366,30 +364,29 @@ Authenticated user must be admin and verified
 ## Definitions
 The definition consists of parts where we write the dependencies required to create the object and where we can determine the life cycles of objects.
 
-#### Examples
-
 app/defs/database.go
 ```go
 var DatabaseServiceDefs = []dingo.Def{
 	{
 		Name:  "db-pool",
 		Scope: di.App,
-		Build: func() (gorm.Dialector, error) {
-			return services.NewDatabaseService(config.GetDbConfig()).OpenDatabase(), nil
+		Build: func() (infrastructures.IGormDatabasePool, error) {
+			return infrastructures.NewGormDatabasePool(config.GetDbConfig()), nil
 		},
+		NotForAutoFill: true,
 	},
 	{
 		Name:  "db",
 		Scope: di.App,
-		Build: func(dia gorm.Dialector) (db *gorm.DB,err error) {
-			return services.DatabaseService{}.ConnectDatabase(dia)
+		Build: func(pool infrastructures.IGormDatabasePool) (infrastructures.IGormDatabase,error) {
+			return infrastructures.NewGormDatabase(pool)
 		},
 		Params: dingo.Params{
 			"0": dingo.Service("db-pool"),
 		},
-		Close: func(db *gorm.DB) error {
-			sqlDB, _ := db.DB()
-			return sqlDB.Close()
+		Close: func(db infrastructures.IGormDatabase) error {
+			gormDB, _ := db.DB().DB()
+			return gormDB.Close()
 		},
 	},
 }
@@ -453,29 +450,46 @@ var MiddlewareDefs = []dingo.Def{
 ```
 
 
-app/defs/userService.go
+app/defs/services.go
 ```go
-var UserServiceDefs = []dingo.Def{
-	{
-		Name:  "user-repository",
-		Scope: di.App,
-		Build: func(db *gorm.DB) (s repositories.IUserRepository, err error) {
-			return repositories.UserRepository{DB: db}, nil
-		},
-		Params: dingo.Params{
-			"0": dingo.Service("db"),
-		},
-	},
-	{
-		Name:  "user-service",
-		Scope: di.App,
-		Build: func(repository repositories.IUserRepository) (s services.IUserService , err error) {
-			return &services.UserService{IUserRepository: repository}, nil
-		},
-		Params: dingo.Params{
-			"0": dingo.Service("user-repository"),
-		},
-	},
+var ServiceDefs = []dingo.Def{
+    {
+        Name:  "auth-service",
+        Scope: di.App,
+        Build: func(repository repositories.IUserRepository) (s services.IAuthService, err error) {
+            s = &services.AuthService{UserRepository: repository}
+            return s, nil
+        },
+        Params: dingo.Params{
+            "0": dingo.Service("user-repository"),
+        },
+    },
+    {
+        Name:  "user-service",
+        Scope: di.App,
+        Build: func(repository repositories.IUserRepository) (s services.IUserService , err error) {
+            return &services.UserService{UserRepository: repository}, nil
+        },
+        Params: dingo.Params{
+            "0": dingo.Service("user-repository"),
+        },
+    },
+}
+```
+
+app/defs/repositories.go
+```go
+var RepositoriesDefs = []dingo.Def{
+    {
+        Name:  "user-repository",
+        Scope: di.App,
+        Build: func(gormDatabase infrastructures.IGormDatabase) (s repositories.IUserRepository, err error) {
+            return &repositories.UserRepository{IGormDatabase: gormDatabase}, nil
+        },
+        Params: dingo.Params{
+            "0": dingo.Service("db"),
+        },
+    },
 }
 ```
 
@@ -490,11 +504,11 @@ func (p *Provider) Load() error {
         return err
     }
 
-    if err := p.AddDefSlice(defs.UserServiceDefs); err != nil {
+    if err := p.AddDefSlice(defs.RepositoriesDefs); err != nil {
         return err
     }
 
-    if err := p.AddDefSlice(defs.AuthServiceDefs); err != nil {
+    if err := p.AddDefSlice(defs.ServiceDefs); err != nil {
         return err
     }
 
