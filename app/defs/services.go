@@ -7,7 +7,7 @@ import (
 	"gotham/services"
 )
 
-var ServiceDefs = []dingo.Def{
+var ServicesDefs = []dingo.Def{
 	{
 		Name:  "auth-service",
 		Scope: di.App,

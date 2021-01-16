@@ -14,7 +14,7 @@ type Provider struct {
  * All the definitions are combined and gathered under one provider. When you create a service definition you need to add here like DatabaseServiceDefs
  */
 func (p *Provider) Load() error {
-	if err := p.AddDefSlice(defs.DatabaseServiceDefs); err != nil {
+	if err := p.AddDefSlice(defs.InfrastructuresDefs); err != nil {
 		return err
 	}
 
@@ -22,15 +22,15 @@ func (p *Provider) Load() error {
 		return err
 	}
 
-	if err := p.AddDefSlice(defs.ServiceDefs); err != nil {
+	if err := p.AddDefSlice(defs.ServicesDefs); err != nil {
 		return err
 	}
 
-	if err := p.AddDefSlice(defs.ControllerDefs); err != nil {
+	if err := p.AddDefSlice(defs.ControllersDefs); err != nil {
 		return err
 	}
 
-	if err := p.AddDefSlice(defs.MiddlewareDefs); err != nil {
+	if err := p.AddDefSlice(defs.MiddlewaresDefs); err != nil {
 		return err
 	}
 

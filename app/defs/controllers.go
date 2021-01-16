@@ -7,7 +7,7 @@ import (
 	"gotham/services"
 )
 
-var ControllerDefs = []dingo.Def{
+var ControllersDefs = []dingo.Def{
 	{
 		Name:  "user-controller",
 		Scope: di.App,

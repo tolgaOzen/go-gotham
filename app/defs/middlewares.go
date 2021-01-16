@@ -7,7 +7,7 @@ import (
 	"gotham/services"
 )
 
-var MiddlewareDefs = []dingo.Def{
+var MiddlewaresDefs = []dingo.Def{
 	{
 		Name:  "is-admin-middleware",
 		Scope: di.App,

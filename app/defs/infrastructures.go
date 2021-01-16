@@ -7,7 +7,7 @@ import (
 	"gotham/infrastructures"
 )
 
-var DatabaseServiceDefs = []dingo.Def{
+var InfrastructuresDefs = []dingo.Def{
 	{
 		Name:  "db-pool",
 		Scope: di.App,
