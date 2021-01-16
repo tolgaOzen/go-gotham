@@ -366,7 +366,7 @@ The definition consists of parts where we write the dependencies required to cre
 
 app/defs/database.go
 ```go
-var DatabaseServiceDefs = []dingo.Def{
+var InfrastructuresDefs = []dingo.Def{
     {
         Name:  "db-pool",
         Scope: di.App,
@@ -374,8 +374,8 @@ var DatabaseServiceDefs = []dingo.Def{
             return infrastructures.NewGormDatabasePool(config.GetDbConfig()), nil
         },
         NotForAutoFill: true,
-	},
-	{
+    },
+    {
         Name:  "db",
         Scope: di.App,
         Build: func(pool infrastructures.IGormDatabasePool) (infrastructures.IGormDatabase,error) {
@@ -387,8 +387,8 @@ var DatabaseServiceDefs = []dingo.Def{
         Close: func(db infrastructures.IGormDatabase) error {
             gormDB, _ := db.DB().DB()
             return gormDB.Close()
-		},
-	},
+        },
+    },
 }
 ```
 Like the example above, the db object is dependent on the dp-pool object. While calling the db object, the db-pool object is injected into the db object, and the  db object is created.
