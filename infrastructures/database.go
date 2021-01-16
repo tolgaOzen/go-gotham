@@ -16,20 +16,34 @@ type IGormDatabase interface {
 }
 
 /**
+ * GormDatabaseService
+ *
+ */
+type GormDatabase struct {
+	Pool     IGormDatabasePool
+	Database *gorm.DB
+}
+
+func (g *GormDatabase) DB() *gorm.DB {
+	return g.Database
+}
+
+func NewGormDatabase(pool IGormDatabasePool) (*GormDatabase, error) {
+	connection ,err := gorm.Open(pool.GetDialector(), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true})
+	var db = &GormDatabase{
+		Pool: pool,
+		Database: connection,
+	}
+	return db, err
+}
+
+
+/**
  * IGormDatabasePool
  *
  */
 type IGormDatabasePool interface {
 	GetDialector() gorm.Dialector
-}
-
-/**
- * GormDatabaseService
- *
- */
-type GormDatabaseService struct {
-	Pool     IGormDatabasePool
-	Database *gorm.DB
 }
 
 /**
@@ -45,19 +59,6 @@ func NewGormDatabasePool(dbConfig config.Database) IGormDatabasePool {
 	default:
 		return NewMysqlPool(dbConfig)
 	}
-}
-
-func (g *GormDatabaseService) DB() *gorm.DB {
-	return g.Database
-}
-
-func NewGormDatabase(pool IGormDatabasePool) (IGormDatabase, error) {
-	connection ,err := gorm.Open(pool.GetDialector(), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true})
-	var db = &GormDatabaseService{
-		Pool: pool,
-		Database: connection,
-	}
-	return db, err
 }
 
 
