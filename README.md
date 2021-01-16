@@ -207,23 +207,23 @@ type UserRepository struct {
 
 func (repository *UserRepository) GetUserByID(id int) (user models.User, err error) {
     err = repository.DB().First(&user, id).Error
-return
+    return
 }
 
 func (repository *UserRepository) GetUserByEmail(email string) (user models.User, err error) {
     err = repository.DB().Where("email = ?", email).First(&user).Error
-return
+    return
 }
 
 func (repository *UserRepository) GetUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
     err = repository.DB().Scopes(pagination.Paginate(models.User{} , orderDefault)).Find(&users).Error
-return
+    return
 }
 
 func (repository *UserRepository) GetUsersCount() (count int64, err error) {
     // you can user getUsersCount procedure here
     err = repository.DB().Model(&models.User{}).Count(&count).Error
-return
+    return
 }
 
 ```
