@@ -24,19 +24,33 @@ type GormDatabase struct {
 	Database *gorm.DB
 }
 
+/**
+ * DB
+ * get DB
+ */
 func (g *GormDatabase) DB() *gorm.DB {
 	return g.Database
 }
 
+/**
+ * NewGormDatabase
+ *
+ */
 func NewGormDatabase(pool IGormDatabasePool) (*GormDatabase, error) {
-	connection ,err := gorm.Open(pool.GetDialector(), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true})
-	var db = &GormDatabase{
-		Pool: pool,
+	connection, err := gorm.Open(pool.GetDialector(), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true})
+	return &GormDatabase{
+		Pool:     pool,
 		Database: connection,
-	}
-	return db, err
+	}, err
 }
 
+/**
+ * GormDatabasePool
+ *
+ */
+type GormDatabasePool struct {
+	Dialector gorm.Dialector
+}
 
 /**
  * IGormDatabasePool
@@ -61,45 +75,62 @@ func NewGormDatabasePool(dbConfig config.Database) IGormDatabasePool {
 	}
 }
 
-
 /**
  * MysqlPool
  *
  */
-type MysqlPool struct{
-	Dialector gorm.Dialector
+type MysqlPool struct {
+	GormDatabasePool
 }
 
-func NewMysqlPool(DbConfig config.Database) MysqlPool {
+/**
+ * NewMysqlPool
+ *
+ */
+func NewMysqlPool(DbConfig config.Database) IGormDatabasePool {
 	dsn := DbConfig.DbUserName + ":" + DbConfig.DbPassword + "@(" + DbConfig.DbHost + ")/" + DbConfig.DbDatabase + "?charset=utf8&parseTime=True&loc=Local"
-	return MysqlPool{
-		Dialector: mysql.Open(dsn),
+	return &MysqlPool{
+		GormDatabasePool{
+			Dialector: mysql.Open(dsn),
+		},
 	}
 }
 
+/**
+ * GetDialector
+ *
+ */
 func (m MysqlPool) GetDialector() gorm.Dialector {
 	return m.Dialector
 }
-
 
 /**
  * PostgresPool
  *
  */
-type PostgresPool struct{
-	Dialector gorm.Dialector
+type PostgresPool struct {
+	GormDatabasePool
 }
 
-func NewPostgresPool(DbConfig config.Database) PostgresPool {
-	return PostgresPool{
-		Dialector: postgres.New(postgres.Config{
-			DSN:                  "user=" + DbConfig.DbUserName + " host=" + DbConfig.DbHost + " password=" + DbConfig.DbPassword + " dbname=" + DbConfig.DbDatabase + " port=" + DbConfig.DbPort + " sslmode=disable",
-			PreferSimpleProtocol: true,
-		}),
+/**
+ * NewPostgresPool
+ *
+ */
+func NewPostgresPool(DbConfig config.Database) IGormDatabasePool {
+	return &PostgresPool{
+		GormDatabasePool{
+			Dialector: postgres.New(postgres.Config{
+				DSN:                  "user=" + DbConfig.DbUserName + " host=" + DbConfig.DbHost + " password=" + DbConfig.DbPassword + " dbname=" + DbConfig.DbDatabase + " port=" + DbConfig.DbPort + " sslmode=disable",
+				PreferSimpleProtocol: true,
+			}),
+		},
 	}
 }
 
+/**
+ * GetDialector
+ *
+ */
 func (m PostgresPool) GetDialector() gorm.Dialector {
 	return m.Dialector
 }
-
