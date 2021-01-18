@@ -52,6 +52,16 @@ type GormDatabasePool struct {
 	Dialector gorm.Dialector
 }
 
+
+/**
+ * GetDialector
+ *
+ */
+func (m GormDatabasePool) GetDialector() gorm.Dialector {
+	return m.Dialector
+}
+
+
 /**
  * IGormDatabasePool
  *
@@ -96,13 +106,6 @@ func NewMysqlPool(DbConfig config.Database) IGormDatabasePool {
 	}
 }
 
-/**
- * GetDialector
- *
- */
-func (m MysqlPool) GetDialector() gorm.Dialector {
-	return m.Dialector
-}
 
 /**
  * PostgresPool
@@ -127,10 +130,3 @@ func NewPostgresPool(DbConfig config.Database) IGormDatabasePool {
 	}
 }
 
-/**
- * GetDialector
- *
- */
-func (m PostgresPool) GetDialector() gorm.Dialector {
-	return m.Dialector
-}
