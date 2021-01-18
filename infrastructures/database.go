@@ -67,7 +67,7 @@ type GormDatabasePool struct {
  * GetDialector
  *
  */
-func (m GormDatabasePool) GetDialector() gorm.Dialector {
+func (m *GormDatabasePool) GetDialector() gorm.Dialector {
 	return m.Dialector
 }
 
