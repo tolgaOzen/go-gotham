@@ -44,6 +44,16 @@ func NewGormDatabase(pool IGormDatabasePool) (*GormDatabase, error) {
 	}, err
 }
 
+
+/**
+ * IGormDatabasePool
+ *
+ */
+type IGormDatabasePool interface {
+	GetDialector() gorm.Dialector
+}
+
+
 /**
  * GormDatabasePool
  *
@@ -59,15 +69,6 @@ type GormDatabasePool struct {
  */
 func (m GormDatabasePool) GetDialector() gorm.Dialector {
 	return m.Dialector
-}
-
-
-/**
- * IGormDatabasePool
- *
- */
-type IGormDatabasePool interface {
-	GetDialector() gorm.Dialector
 }
 
 /**
