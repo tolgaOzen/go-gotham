@@ -8,6 +8,7 @@ import (
 	provider "gotham/app/provider"
 	"gotham/config"
 	"gotham/database/migrations"
+	"gotham/database/seeds"
 	"gotham/routers"
 	"os"
 )
@@ -26,6 +27,7 @@ func main() {
 	defer app.Application.Container.Delete()
 
 	migrations.Initialize()
+	seeds.Initialize()
 	//procedures.Initialize()
 	//go jobs.Initialize()
 
