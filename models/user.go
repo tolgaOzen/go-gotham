@@ -17,8 +17,8 @@ type User struct {
 	Admin             uint8   `gorm:"type:boolean;not null;default:0" json:"admin"`
 
 	// Time
-	CreatedAt time.Time      `gorm:"type:datetime(0)" json:"created_at"`
-	UpdatedAt time.Time      `gorm:"type:datetime(0)"  json:"updated_at"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
