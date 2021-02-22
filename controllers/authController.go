@@ -6,7 +6,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 	"gotham/config"
-	"gotham/helpers"
 	"gotham/requests"
 	"gotham/services"
 	"gotham/viewModels"
@@ -66,7 +65,7 @@ func (a AuthController) Login(c echo.Context) (err error) {
 	accessTokenExp := time.Now().Add(time.Hour * 720).Unix()
 
 	claims := &config.JwtCustomClaims{
-		Id:    user.ID,
+		ID:    user.ID,
 		Name:  user.Name,
 		Email: user.Email,
 		StandardClaims: jwt.StandardClaims{
@@ -82,7 +81,7 @@ func (a AuthController) Login(c echo.Context) (err error) {
 		return
 	}
 
-	return c.JSON(http.StatusOK, helpers.SuccessResponse(viewModels.Login{
+	return c.JSON(http.StatusOK, viewModels.SuccessResponse(viewModels.Login{
 		AccessToken: accessToken,
 		AccessTokenExp: accessTokenExp,
 		User: user,

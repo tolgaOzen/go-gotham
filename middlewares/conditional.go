@@ -1,47 +1,44 @@
 package GMiddleware
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
-	"gotham/helpers"
-	"net/http"
+	"gotham/viewModels"
 )
 
 type IConditionalMiddleware interface {
-	control(c echo.Context) (bool, error)
+	control(c echo.Context) *echo.HTTPError
 }
 
 // Conditional Middlewares
-func Or(middleware []IConditionalMiddleware) echo.MiddlewareFunc {
+
+func Or(middleware ...IConditionalMiddleware) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			var msg = "You cannot access"
-
+			var err *echo.HTTPError
 			for _, m := range middleware {
-				canDo, err := m.control(c)
-				if err != nil {
-					msg = err.Error()
-				}
-				if canDo {
+				err = m.control(c)
+				if err == nil {
 					return next(c)
 				}
 			}
-			return c.JSON(http.StatusBadRequest, helpers.ErrorResponse(http.StatusBadRequest, msg))
+
+			if err != nil {
+				return c.JSON(err.Code, viewModels.MResponse(fmt.Sprintf("%v", err.Message)))
+			}
+
+			return next(c)
 		}
 	}
 }
 
-func And(middleware []IConditionalMiddleware) echo.MiddlewareFunc {
+func And(middleware ...IConditionalMiddleware) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			var msg = "You cannot access"
-
 			for _, m := range middleware {
-				canDo, err := m.control(c)
+				err := m.control(c)
 				if err != nil {
-					msg = err.Error()
-				}
-				if !canDo {
-					return c.JSON(http.StatusBadRequest, helpers.ErrorResponse(http.StatusBadRequest, msg))
+					return c.JSON(err.Code, viewModels.MResponse(fmt.Sprintf("%v", err.Message)))
 				}
 			}
 			return next(c)

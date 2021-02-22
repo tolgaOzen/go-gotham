@@ -248,3 +248,5 @@ gorm.io/gorm v1.20.8/go.mod h1:0HFTzE/SqkGTzK6TlDPPQbAYCluiVvhzoA1+aVyzenw=
 gorm.io/gorm v1.20.9 h1:M3aIZKXAC1PtPVu9t3WGwkBTE1le5c2telz3I/qjRNg=
 gorm.io/gorm v1.20.9/go.mod h1:0HFTzE/SqkGTzK6TlDPPQbAYCluiVvhzoA1+aVyzenw=
 honnef.co/go/tools v0.0.1-2019.2.3/go.mod h1:a3bituU0lyd329TUQxRnasdCoJDkEUEAqEt0JzvZhAg=
+syreclabs.com/go/faker v1.2.3 h1:HPrWtnHazIf0/bVuPZJLFrtHlBHk10hS0SB+mV8v6R4=
+syreclabs.com/go/faker v1.2.3/go.mod h1:NAXInmkPsC2xuO5MKZFe80PUXX5LU8cFdJIHGs+nSBE=

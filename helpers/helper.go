@@ -5,14 +5,13 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"encoding/hex"
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"math"
 	"math/rand"
 	"reflect"
 	"regexp"
-	"strings"
 )
-
 
 func Hash(password string) ([]byte, error) {
 	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -72,28 +71,6 @@ func InArray(val interface{}, array interface{}) (exists bool) {
 	return
 }
 
-func OrderBySetter(tag, key string, s interface{}, defaultValue string) (d string) {
-
-	d = defaultValue
-	if tag == "" {
-		return
-	}
-
-	rt := reflect.TypeOf(s)
-	if rt.Kind() != reflect.Struct {
-		panic("bad type")
-	}
-	for i := 0; i < rt.NumField(); i++ {
-		f := rt.Field(i)
-		v := strings.Split(f.Tag.Get(key), ",")[0] // use split to ignore tag "options"
-		if v == tag {
-			return f.Tag.Get(key)
-		}
-	}
-
-	return
-}
-
 func RemoveDuplicateValues(intSlice []uint) []uint {
 	keys := make(map[uint]bool)
 	list := []uint{}
@@ -116,7 +93,24 @@ func ComputeHmacSha1(message string, secret string) string {
 func ClearNonAlphanumericalCharacters(val string) (string, error) {
 	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
 	if err != nil {
-		return "",err
+		return "", err
 	}
-	return reg.ReplaceAllString(val, "") , nil
+	return reg.ReplaceAllString(val, ""), nil
+}
+
+func RandomInt(min, max int) int {
+	return rand.Intn(max-min) + min
+}
+
+func ByteCountDecimal(b int64) string {
+	const unit = 1000
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(b)/float64(div), "kMGTPE"[exp])
 }

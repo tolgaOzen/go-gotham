@@ -13,21 +13,21 @@ type IsVerified struct{
 	UserService services.IUserService
 }
 
-func (i IsVerified) control(c echo.Context) (bool bool, err error) {
+func (i IsVerified) control(c echo.Context) *echo.HTTPError {
 	u := c.Get("user").(*jwt.Token)
 	claims := u.Claims.(*config.JwtCustomClaims)
 
-	user, err := i.UserService.GetUserByID(int(claims.Id))
+	user, err := i.UserService.GetUserByID(claims.ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, echo.ErrUnauthorized
+			return echo.NewHTTPError(404, "user could not be found")
 		}
-		return false, echo.ErrInternalServerError
+		return echo.ErrInternalServerError
 	}
 
 	if user.IsVerified() {
-		return true, nil
+		return nil
 	}
 
-	return false, errors.New("your email not verified")
+	return echo.NewHTTPError(403, "your email not verified")
 }

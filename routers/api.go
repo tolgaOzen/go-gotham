@@ -1,13 +1,16 @@
 package routers
 
 import (
+	"context"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gotham/app"
 	"gotham/config"
 	"gotham/controllers"
 	GMiddleware "gotham/middlewares"
-	"net/http"
+	"os"
+	"os/signal"
+	"time"
 )
 
 
@@ -17,7 +20,6 @@ func Route(e *echo.Echo) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
-	//e.Use(GMiddleware.DicSubContainerSetterMiddleware)
 
 	//server
 	e.GET("/status/ping", controllers.ServerController{}.Ping)
@@ -36,12 +38,23 @@ func Route(e *echo.Echo) {
 	r.Use(middleware.JWTWithConfig(c))
 
 	//user
-	r.GET("/users/:user", app.Application.Container.GetUserController().Show,GMiddleware.Or([]GMiddleware.IConditionalMiddleware{app.Application.Container.GetIsVerifiedMiddleware()}))
-	r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And([]GMiddleware.IConditionalMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
+	r.GET("/users/:user", app.Application.Container.GetUserController().Show,GMiddleware.Or(app.Application.Container.GetIsVerifiedMiddleware()))
+	r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And(app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()))
 
-	s := &http.Server{
-		Addr: ":" + config.Conf.Port,
+
+	// Start server
+	go func() {
+		if err := e.Start(":" + config.Conf.Port); err != nil {
+			e.Logger.Info("shutting down the server")
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal(err)
 	}
-
-	e.Logger.Fatal(e.StartServer(s))
 }

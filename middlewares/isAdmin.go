@@ -13,22 +13,22 @@ type IsAdmin struct {
 	UserService services.IUserService
 }
 
-func (i IsAdmin) control(c echo.Context) (bool bool, err error) {
+func (i IsAdmin) control(c echo.Context) *echo.HTTPError {
 	u := c.Get("user").(*jwt.Token)
 	claims := u.Claims.(*config.JwtCustomClaims)
 
-	user, err := i.UserService.GetUserByID(int(claims.Id))
+	user, err := i.UserService.GetUserByID(claims.ID)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, echo.ErrUnauthorized
+			return echo.NewHTTPError(404, "user could not be found")
 		}
-		return false, echo.ErrInternalServerError
+		return echo.ErrInternalServerError
 	}
 
 	if user.IsAdmin() {
-		return true, nil
+		return nil
 	}
 
-	return false, errors.New("you are not admin")
+	return echo.NewHTTPError(403, "you are not admin")
 }

@@ -13,6 +13,7 @@ import (
 	controllers "gotham/controllers"
 	infrastructures "gotham/infrastructures"
 	middlewares "gotham/middlewares"
+	policies "gotham/policies"
 	repositories "gotham/repositories"
 	services "gotham/services"
 )
@@ -623,6 +624,64 @@ func (c *Container) UnscopedGetUserController() controllers.UserController {
 // If the container can not be retrieved, it panics.
 func UserController(i interface{}) controllers.UserController {
 	return C(i).GetUserController()
+}
+
+// SafeGetUserPolicy works like SafeGet but only for UserPolicy.
+// It does not return an interface but a policies.IUserPolicy.
+func (c *Container) SafeGetUserPolicy() (policies.IUserPolicy, error) {
+	i, err := c.ctn.SafeGet("user-policy")
+	if err != nil {
+		var eo policies.IUserPolicy
+		return eo, err
+	}
+	o, ok := i.(policies.IUserPolicy)
+	if !ok {
+		return o, errors.New("could get 'user-policy' because the object could not be cast to policies.IUserPolicy")
+	}
+	return o, nil
+}
+
+// GetUserPolicy is similar to SafeGetUserPolicy but it does not return the error.
+// Instead it panics.
+func (c *Container) GetUserPolicy() policies.IUserPolicy {
+	o, err := c.SafeGetUserPolicy()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetUserPolicy works like UnscopedSafeGet but only for UserPolicy.
+// It does not return an interface but a policies.IUserPolicy.
+func (c *Container) UnscopedSafeGetUserPolicy() (policies.IUserPolicy, error) {
+	i, err := c.ctn.UnscopedSafeGet("user-policy")
+	if err != nil {
+		var eo policies.IUserPolicy
+		return eo, err
+	}
+	o, ok := i.(policies.IUserPolicy)
+	if !ok {
+		return o, errors.New("could get 'user-policy' because the object could not be cast to policies.IUserPolicy")
+	}
+	return o, nil
+}
+
+// UnscopedGetUserPolicy is similar to UnscopedSafeGetUserPolicy but it does not return the error.
+// Instead it panics.
+func (c *Container) UnscopedGetUserPolicy() policies.IUserPolicy {
+	o, err := c.UnscopedSafeGetUserPolicy()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UserPolicy is similar to GetUserPolicy.
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it applies the GetUserPolicy method.
+// If the container can not be retrieved, it panics.
+func UserPolicy(i interface{}) policies.IUserPolicy {
+	return C(i).GetUserPolicy()
 }
 
 // SafeGetUserRepository works like SafeGet but only for UserRepository.

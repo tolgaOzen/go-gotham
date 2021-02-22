@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"github.com/labstack/echo/v4"
-	"gotham/helpers"
+	"gotham/viewModels"
 	"net/http"
 	"os"
 )
@@ -16,7 +16,7 @@ type ServerController struct{}
  * @return error
  */
 func (ServerController) Ping(c echo.Context) (err error) {
-	return c.JSON(http.StatusOK, helpers.MResponse(200 , "pong"))
+	return c.JSON(http.StatusOK, viewModels.MResponse("pong"))
 }
 
 /**

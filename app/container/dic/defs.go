@@ -9,6 +9,7 @@ import (
 	controllers "gotham/controllers"
 	infrastructures "gotham/infrastructures"
 	middlewares "gotham/middlewares"
+	policies "gotham/policies"
 	repositories "gotham/repositories"
 	services "gotham/services"
 )
@@ -216,12 +217,42 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 					var eo controllers.UserController
 					return eo, errors.New("could not cast parameter 0 to services.IUserService")
 				}
-				b, ok := d.Build.(func(services.IUserService) (controllers.UserController, error))
+				pi1, err := ctn.SafeGet("user-policy")
+				if err != nil {
+					var eo controllers.UserController
+					return eo, err
+				}
+				p1, ok := pi1.(policies.IUserPolicy)
 				if !ok {
 					var eo controllers.UserController
-					return eo, errors.New("could not cast build function to func(services.IUserService) (controllers.UserController, error)")
+					return eo, errors.New("could not cast parameter 1 to policies.IUserPolicy")
 				}
-				return b(p0)
+				b, ok := d.Build.(func(services.IUserService, policies.IUserPolicy) (controllers.UserController, error))
+				if !ok {
+					var eo controllers.UserController
+					return eo, errors.New("could not cast build function to func(services.IUserService, policies.IUserPolicy) (controllers.UserController, error)")
+				}
+				return b(p0, p1)
+			},
+			Close: func(obj interface{}) error {
+				return nil
+			},
+		},
+		{
+			Name:  "user-policy",
+			Scope: "app",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("user-policy")
+				if err != nil {
+					var eo policies.IUserPolicy
+					return eo, err
+				}
+				b, ok := d.Build.(func() (policies.IUserPolicy, error))
+				if !ok {
+					var eo policies.IUserPolicy
+					return eo, errors.New("could not cast build function to func() (policies.IUserPolicy, error)")
+				}
+				return b()
 			},
 			Close: func(obj interface{}) error {
 				return nil

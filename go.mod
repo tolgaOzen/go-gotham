@@ -21,4 +21,5 @@ require (
 	gorm.io/driver/mysql v1.0.3
 	gorm.io/driver/postgres v1.0.6
 	gorm.io/gorm v1.20.9
+	syreclabs.com/go/faker v1.2.3
 )

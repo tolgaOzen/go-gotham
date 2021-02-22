@@ -10,7 +10,7 @@ type UserShowRequest struct {
 	/**
 	 * PATH
 	 */
-	User int `query:"user"`
+	User uint `path:"user" json:"-" form:"-" query:"-" xml:"-"`
 
 	/**
 	 * BODY
