@@ -1,0 +1,25 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /src/gotham
+permissions:
+  - object: /src/gotham
+    pattern: '**'
+    mode: '0755'
+    owner: root
+    group: root
+    type:
+      - file
+      - directory
+hooks:
+  BeforeInstall:
+    - location: codedeploy/BeforeInstall.sh
+  AfterInstall:
+    - location: codedeploy/AfterInstall.sh
+  ApplicationStop:
+    - location: codedeploy/ApplicationStop.sh
+  ApplicationStart:
+    - location: codedeploy/ApplicationStart.sh
+  ValidateService:
+    - location: codedeploy/ValidateService.sh
