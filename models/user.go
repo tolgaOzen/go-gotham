@@ -11,10 +11,10 @@ type User struct {
 	Name              string  `gorm:"size:255;not null" json:"name"`
 	Email             string  `gorm:"size:100;not null;unique;unique_index" json:"email"`
 	Password          string  `gorm:"size:100" json:"-"`
-	Verified          uint8   `gorm:"type:boolean" json:"verified"`
+	Verified          bool    `gorm:"type:boolean" json:"verified"`
 	VerificationToken *string `gorm:"size:50;" json:"-"`
 	Image             *string `gorm:"size:500;" json:"image"`
-	Admin             uint8   `gorm:"type:boolean;not null;default:0" json:"admin"`
+	Admin             bool    `gorm:"type:boolean;not null;default:0" json:"admin"`
 
 	// Time
 	CreatedAt time.Time      `json:"created_at"`
@@ -39,7 +39,7 @@ func (u *User) VerifyPassword(password string) bool {
  * @return bool
  */
 func (u *User) IsVerified() bool {
-	return u.Verified == 1
+	return u.Verified
 }
 
 /**
@@ -48,5 +48,5 @@ func (u *User) IsVerified() bool {
  * @return bool
  */
 func (u *User) IsAdmin() bool {
-	return u.Admin == 1
+	return u.Admin
 }
