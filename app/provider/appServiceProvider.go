@@ -34,6 +34,10 @@ func (p *Provider) Load() error {
 		return err
 	}
 
+	if err := p.AddDefSlice(defs.MailsDefs); err != nil {
+		return err
+	}
+
 	if err := p.AddDefSlice(defs.PoliciesDefs); err != nil {
 		return err
 	}

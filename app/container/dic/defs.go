@@ -8,6 +8,7 @@ import (
 
 	controllers "gotham/controllers"
 	infrastructures "gotham/infrastructures"
+	mails "gotham/mails"
 	middlewares "gotham/middlewares"
 	policies "gotham/policies"
 	repositories "gotham/repositories"
@@ -39,6 +40,36 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 				if !ok {
 					var eo controllers.AuthController
 					return eo, errors.New("could not cast build function to func(services.IAuthService) (controllers.AuthController, error)")
+				}
+				return b(p0)
+			},
+			Close: func(obj interface{}) error {
+				return nil
+			},
+		},
+		{
+			Name:  "auth-middleware",
+			Scope: "app",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("auth-middleware")
+				if err != nil {
+					var eo middlewares.Auth
+					return eo, err
+				}
+				pi0, err := ctn.SafeGet("user-service")
+				if err != nil {
+					var eo middlewares.Auth
+					return eo, err
+				}
+				p0, ok := pi0.(services.IUserService)
+				if !ok {
+					var eo middlewares.Auth
+					return eo, errors.New("could not cast parameter 0 to services.IUserService")
+				}
+				b, ok := d.Build.(func(services.IUserService) (middlewares.Auth, error))
+				if !ok {
+					var eo middlewares.Auth
+					return eo, errors.New("could not cast build function to func(services.IUserService) (middlewares.Auth, error)")
 				}
 				return b(p0)
 			},
@@ -131,6 +162,26 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 				if !ok {
 					var eo infrastructures.IGormDatabasePool
 					return eo, errors.New("could not cast build function to func() (infrastructures.IGormDatabasePool, error)")
+				}
+				return b()
+			},
+			Close: func(obj interface{}) error {
+				return nil
+			},
+		},
+		{
+			Name:  "email",
+			Scope: "app",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("email")
+				if err != nil {
+					var eo infrastructures.IEmailService
+					return eo, err
+				}
+				b, ok := d.Build.(func() (infrastructures.IEmailService, error))
+				if !ok {
+					var eo infrastructures.IEmailService
+					return eo, errors.New("could not cast build function to func() (infrastructures.IEmailService, error)")
 				}
 				return b()
 			},
@@ -313,6 +364,26 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 					return eo, errors.New("could not cast build function to func(repositories.IUserRepository) (services.IUserService, error)")
 				}
 				return b(p0)
+			},
+			Close: func(obj interface{}) error {
+				return nil
+			},
+		},
+		{
+			Name:  "user-welcome-mail",
+			Scope: "app",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("user-welcome-mail")
+				if err != nil {
+					var eo mails.IMailRenderer
+					return eo, err
+				}
+				b, ok := d.Build.(func() (mails.IMailRenderer, error))
+				if !ok {
+					var eo mails.IMailRenderer
+					return eo, errors.New("could not cast build function to func() (mails.IMailRenderer, error)")
+				}
+				return b()
 			},
 			Close: func(obj interface{}) error {
 				return nil

@@ -30,4 +30,11 @@ var InfrastructuresDefs = []dingo.Def{
 			return gormDB.Close()
 		},
 	},
+	{
+		Name:  "email",
+		Scope: di.App,
+		Build: func() (emailService infrastructures.IEmailService , err error) {
+			return infrastructures.NewEmailService(&config.Conf.Email), nil
+		},
+	},
 }

@@ -12,6 +12,7 @@ import (
 
 	controllers "gotham/controllers"
 	infrastructures "gotham/infrastructures"
+	mails "gotham/mails"
 	middlewares "gotham/middlewares"
 	policies "gotham/policies"
 	repositories "gotham/repositories"
@@ -278,6 +279,64 @@ func AuthController(i interface{}) controllers.AuthController {
 	return C(i).GetAuthController()
 }
 
+// SafeGetAuthMiddleware works like SafeGet but only for AuthMiddleware.
+// It does not return an interface but a middlewares.Auth.
+func (c *Container) SafeGetAuthMiddleware() (middlewares.Auth, error) {
+	i, err := c.ctn.SafeGet("auth-middleware")
+	if err != nil {
+		var eo middlewares.Auth
+		return eo, err
+	}
+	o, ok := i.(middlewares.Auth)
+	if !ok {
+		return o, errors.New("could get 'auth-middleware' because the object could not be cast to middlewares.Auth")
+	}
+	return o, nil
+}
+
+// GetAuthMiddleware is similar to SafeGetAuthMiddleware but it does not return the error.
+// Instead it panics.
+func (c *Container) GetAuthMiddleware() middlewares.Auth {
+	o, err := c.SafeGetAuthMiddleware()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetAuthMiddleware works like UnscopedSafeGet but only for AuthMiddleware.
+// It does not return an interface but a middlewares.Auth.
+func (c *Container) UnscopedSafeGetAuthMiddleware() (middlewares.Auth, error) {
+	i, err := c.ctn.UnscopedSafeGet("auth-middleware")
+	if err != nil {
+		var eo middlewares.Auth
+		return eo, err
+	}
+	o, ok := i.(middlewares.Auth)
+	if !ok {
+		return o, errors.New("could get 'auth-middleware' because the object could not be cast to middlewares.Auth")
+	}
+	return o, nil
+}
+
+// UnscopedGetAuthMiddleware is similar to UnscopedSafeGetAuthMiddleware but it does not return the error.
+// Instead it panics.
+func (c *Container) UnscopedGetAuthMiddleware() middlewares.Auth {
+	o, err := c.UnscopedSafeGetAuthMiddleware()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// AuthMiddleware is similar to GetAuthMiddleware.
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it applies the GetAuthMiddleware method.
+// If the container can not be retrieved, it panics.
+func AuthMiddleware(i interface{}) middlewares.Auth {
+	return C(i).GetAuthMiddleware()
+}
+
 // SafeGetAuthService works like SafeGet but only for AuthService.
 // It does not return an interface but a services.IAuthService.
 func (c *Container) SafeGetAuthService() (services.IAuthService, error) {
@@ -450,6 +509,64 @@ func (c *Container) UnscopedGetDbPool() infrastructures.IGormDatabasePool {
 // If the container can not be retrieved, it panics.
 func DbPool(i interface{}) infrastructures.IGormDatabasePool {
 	return C(i).GetDbPool()
+}
+
+// SafeGetEmail works like SafeGet but only for Email.
+// It does not return an interface but a infrastructures.IEmailService.
+func (c *Container) SafeGetEmail() (infrastructures.IEmailService, error) {
+	i, err := c.ctn.SafeGet("email")
+	if err != nil {
+		var eo infrastructures.IEmailService
+		return eo, err
+	}
+	o, ok := i.(infrastructures.IEmailService)
+	if !ok {
+		return o, errors.New("could get 'email' because the object could not be cast to infrastructures.IEmailService")
+	}
+	return o, nil
+}
+
+// GetEmail is similar to SafeGetEmail but it does not return the error.
+// Instead it panics.
+func (c *Container) GetEmail() infrastructures.IEmailService {
+	o, err := c.SafeGetEmail()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetEmail works like UnscopedSafeGet but only for Email.
+// It does not return an interface but a infrastructures.IEmailService.
+func (c *Container) UnscopedSafeGetEmail() (infrastructures.IEmailService, error) {
+	i, err := c.ctn.UnscopedSafeGet("email")
+	if err != nil {
+		var eo infrastructures.IEmailService
+		return eo, err
+	}
+	o, ok := i.(infrastructures.IEmailService)
+	if !ok {
+		return o, errors.New("could get 'email' because the object could not be cast to infrastructures.IEmailService")
+	}
+	return o, nil
+}
+
+// UnscopedGetEmail is similar to UnscopedSafeGetEmail but it does not return the error.
+// Instead it panics.
+func (c *Container) UnscopedGetEmail() infrastructures.IEmailService {
+	o, err := c.UnscopedSafeGetEmail()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// Email is similar to GetEmail.
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it applies the GetEmail method.
+// If the container can not be retrieved, it panics.
+func Email(i interface{}) infrastructures.IEmailService {
+	return C(i).GetEmail()
 }
 
 // SafeGetIsAdminMiddleware works like SafeGet but only for IsAdminMiddleware.
@@ -798,4 +915,62 @@ func (c *Container) UnscopedGetUserService() services.IUserService {
 // If the container can not be retrieved, it panics.
 func UserService(i interface{}) services.IUserService {
 	return C(i).GetUserService()
+}
+
+// SafeGetUserWelcomeMail works like SafeGet but only for UserWelcomeMail.
+// It does not return an interface but a mails.IMailRenderer.
+func (c *Container) SafeGetUserWelcomeMail() (mails.IMailRenderer, error) {
+	i, err := c.ctn.SafeGet("user-welcome-mail")
+	if err != nil {
+		var eo mails.IMailRenderer
+		return eo, err
+	}
+	o, ok := i.(mails.IMailRenderer)
+	if !ok {
+		return o, errors.New("could get 'user-welcome-mail' because the object could not be cast to mails.IMailRenderer")
+	}
+	return o, nil
+}
+
+// GetUserWelcomeMail is similar to SafeGetUserWelcomeMail but it does not return the error.
+// Instead it panics.
+func (c *Container) GetUserWelcomeMail() mails.IMailRenderer {
+	o, err := c.SafeGetUserWelcomeMail()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetUserWelcomeMail works like UnscopedSafeGet but only for UserWelcomeMail.
+// It does not return an interface but a mails.IMailRenderer.
+func (c *Container) UnscopedSafeGetUserWelcomeMail() (mails.IMailRenderer, error) {
+	i, err := c.ctn.UnscopedSafeGet("user-welcome-mail")
+	if err != nil {
+		var eo mails.IMailRenderer
+		return eo, err
+	}
+	o, ok := i.(mails.IMailRenderer)
+	if !ok {
+		return o, errors.New("could get 'user-welcome-mail' because the object could not be cast to mails.IMailRenderer")
+	}
+	return o, nil
+}
+
+// UnscopedGetUserWelcomeMail is similar to UnscopedSafeGetUserWelcomeMail but it does not return the error.
+// Instead it panics.
+func (c *Container) UnscopedGetUserWelcomeMail() mails.IMailRenderer {
+	o, err := c.UnscopedSafeGetUserWelcomeMail()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UserWelcomeMail is similar to GetUserWelcomeMail.
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it applies the GetUserWelcomeMail method.
+// If the container can not be retrieved, it panics.
+func UserWelcomeMail(i interface{}) mails.IMailRenderer {
+	return C(i).GetUserWelcomeMail()
 }

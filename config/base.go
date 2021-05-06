@@ -24,6 +24,7 @@ type Config struct {
 	BaseUrl   string
 	Db        Database
 	SecretKey string
+	Email     EmailConfig
 	Brand     struct {
 		ProjectName   string
 		ProjectUrl    string
@@ -41,6 +42,7 @@ func Configurations() {
 		Port:    port,
 		BaseUrl: os.Getenv("BASE_URL") + ":" + port,
 		SecretKey: os.Getenv("JWT_SECRET_KEY"),
+		Email:     GetEmailConfig(),
 		Brand: struct {
 			ProjectName   string
 			ProjectUrl    string
