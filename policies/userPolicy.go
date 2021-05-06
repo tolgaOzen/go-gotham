@@ -1,31 +1,30 @@
 package policies
 
 import (
-	"gotham/config"
 	"gotham/models"
 )
 
 type IUserPolicy interface {
-	Index(claims *config.JwtCustomClaims) bool
-	Show(claims *config.JwtCustomClaims) bool
-	Update(claims *config.JwtCustomClaims, user models.User) bool
-	Delete(claims *config.JwtCustomClaims, user models.User) bool
+	Index(auth models.User) bool
+	Show(auth models.User, user models.User) bool
+	Update(auth models.User, user models.User) bool
+	Delete(auth models.User, user models.User) bool
 }
 
 type UserPolicy struct {}
 
-func (UserPolicy) Index(claims *config.JwtCustomClaims) bool  {
-	return claims.ID == 1
+func (UserPolicy) Index(auth models.User) bool  {
+	return auth.ID == 1
 }
 
-func (UserPolicy) Show(claims *config.JwtCustomClaims) bool  {
-	return claims.ID == 1
+func (UserPolicy) Show(auth models.User, user models.User) bool  {
+	return auth.ID == 1 && user.Verified
 }
 
-func (UserPolicy) Update(claims *config.JwtCustomClaims, user models.User) bool  {
-	return claims.ID == user.ID
+func (UserPolicy) Update(auth models.User, user models.User) bool  {
+	return auth.ID == user.ID
 }
 
-func (UserPolicy) Delete(claims *config.JwtCustomClaims, user models.User) bool  {
-	return claims.ID == user.ID
+func (UserPolicy) Delete(auth models.User, user models.User) bool  {
+	return auth.ID == user.ID
 }
