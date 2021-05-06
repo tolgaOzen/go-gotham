@@ -1,23 +1,26 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/sarulabs/dingo/v4"
 	"gotham/app"
 	provider "gotham/app/provider"
 	"gotham/config"
-	"gotham/database/migrations"
-	"gotham/database/seeds"
 	"gotham/routers"
 	"os"
 )
 
 func init() {
-	err := dingo.GenerateContainer((*provider.Provider)(nil), "./app/container")
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+	production := flag.Bool("production", false, "a bool")
+	flag.Parse()
+	if !*production {
+		err := dingo.GenerateContainer((*provider.Provider)(nil), "./app/container")
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
 	}
 }
 
@@ -26,10 +29,8 @@ func main() {
 	app.New()
 	defer app.Application.Container.Delete()
 
-	migrations.Initialize()
-	seeds.Initialize()
-	//procedures.Initialize()
-	//go jobs.Initialize()
+	//migrations.Initialize()
+	//seeds.Initialize()
 
 	routers.Route(echo.New())
 }
