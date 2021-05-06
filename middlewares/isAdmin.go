@@ -17,7 +17,7 @@ func (i IsAdmin) control(c echo.Context) *echo.HTTPError {
 	u := c.Get("user").(*jwt.Token)
 	claims := u.Claims.(*config.JwtCustomClaims)
 
-	user, err := i.UserService.GetUserByID(claims.ID)
+	user, err := i.UserService.GetUserByID(claims.AuthID)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
