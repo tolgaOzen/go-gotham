@@ -7,10 +7,9 @@ import (
 )
 
 type IUserService interface {
-	GetUsers(pagination *scopes.Pagination) ([]models.User, error)
+	GetUsersWithPagination(pagination *scopes.Pagination) (users []models.User, totalCount int64 , err error)
 	GetUserByID(id uint) (models.User, error)
 	GetUserByEmail(email string) (models.User, error)
-	GetUsersCount() (int64, error)
 }
 
 type UserService struct {
@@ -25,11 +24,12 @@ func (service *UserService) GetUserByEmail(email string) (user models.User, err 
 	return service.UserRepository.GetUserByEmail(email)
 }
 
-func (service *UserService) GetUsers(pagination *scopes.Pagination) (users []models.User, err error) {
-	return service.UserRepository.GetUsers(pagination)
+func (service *UserService) GetUsersWithPagination(pagination *scopes.Pagination) (users []models.User, totalCount int64 , err error) {
+	var userIDs []uint
+	userIDs , err = service.UserRepository.GetUserIDs()
+	totalCount = int64(len(userIDs))
+	users, err = service.UserRepository.GetUsersWithPagination(userIDs, pagination)
+	return
 }
 
-func (service *UserService) GetUsersCount() (count int64, err error) {
-	return service.UserRepository.GetUsersCount()
-}
 
