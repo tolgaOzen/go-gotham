@@ -2,22 +2,23 @@ package requests
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
+	"gotham/models/scopes"
 )
 
-type UserShowRequest struct {
+type UserIndexRequest struct {
 	validation.Validatable `json:"-" form:"-" query:"-"`
 
 	/**
 	 * PathParams
 	 */
 	PathParams struct{
-		User uint `param:"user"`
 	}
 
 	/**
 	 * QueryParams
 	 */
 	QueryParams struct{
+		scopes.Pagination
 	}
 
 	/**
@@ -27,6 +28,7 @@ type UserShowRequest struct {
 	}
 }
 
-func (r UserShowRequest) Validate() error {
+func (r UserIndexRequest) Validate() error {
 	return nil
 }
+

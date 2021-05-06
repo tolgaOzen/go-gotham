@@ -9,15 +9,29 @@ type LoginRequest struct {
 	validation.Validatable `json:"-" form:"-" query:"-"`
 
 	/**
-    * BODY
+	 * PathParams
+	 */
+	PathParams struct{
+	}
+
+	/**
+	 * QueryParams
+	 */
+	QueryParams struct{
+	}
+
+	/**
+    * Body
     */
-	Email    string `json:"email" form:"email" query:"email"`
-	Password string `json:"password" form:"password" query:"password"`
+	Body struct{
+		Email    string `json:"email" form:"email" query:"email"`
+		Password string `json:"password" form:"password" query:"password"`
+	}
 }
 
 func (r LoginRequest) Validate() error {
-	return validation.ValidateStruct(&r,
-		validation.Field(&r.Email, validation.Required, validation.Length(4, 50), is.Email),
-		validation.Field(&r.Password, validation.Required, validation.Length(8, 50)),
+	return validation.ValidateStruct(&r.Body,
+		validation.Field(&r.Body.Email, validation.Required, validation.Length(4, 50), is.Email),
+		validation.Field(&r.Body.Password, validation.Required, validation.Length(8, 50)),
 	)
 }

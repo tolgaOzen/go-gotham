@@ -28,4 +28,14 @@ var MiddlewaresDefs = []dingo.Def{
 			"0": dingo.Service("user-service"),
 		},
 	},
+	{
+		Name:  "auth-middleware",
+		Scope: di.App,
+		Build: func(repository services.IUserService) (s GMiddleware.Auth , err error) {
+			return GMiddleware.Auth{UserService: repository}, nil
+		},
+		Params: dingo.Params{
+			"0": dingo.Service("user-service"),
+		},
+	},
 }

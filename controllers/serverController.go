@@ -9,22 +9,20 @@ import (
 
 type ServerController struct{}
 
-/**
- * Ping
- *
- * @param echo.Context
- * @return error
- */
+// Ping godoc
+// @Tags Server
+// @Success 200 {object} viewModels.Message{}
+// @Failure 500
+// @Router /status/ping [get]
 func (ServerController) Ping(c echo.Context) (err error) {
 	return c.JSON(http.StatusOK, viewModels.MResponse("pong"))
 }
 
-/**
- * Version
- *
- * @param echo.Context
- * @return error
- */
+// Version godoc
+// @Tags Server
+// @Success 200 {object} viewModels.Message{}
+// @Failure 500
+// @Router /status/version [get]
 func (ServerController) Version(c echo.Context) (err error) {
 	return c.JSON(http.StatusOK,map[string]interface{}{
 		"version": os.Getenv("VERSION"),

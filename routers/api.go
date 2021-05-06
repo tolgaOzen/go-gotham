@@ -4,9 +4,11 @@ import (
 	"context"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
 	"gotham/app"
 	"gotham/config"
 	"gotham/controllers"
+	"gotham/docs"
 	GMiddleware "gotham/middlewares"
 	"os"
 	"os/signal"
@@ -17,18 +19,29 @@ import (
 
 func Route(e *echo.Echo) {
 
+	docs.SwaggerInfo.Title = "Gotham API"
+	docs.SwaggerInfo.Description = "..."
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Host = "fluffzy.com"
+	docs.SwaggerInfo.BasePath = "/"
+	docs.SwaggerInfo.Schemes = []string{"v1"}
+
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
+
+	e.GET("/doc/*", echoSwagger.WrapHandler)
 
 	//server
 	e.GET("/status/ping", controllers.ServerController{}.Ping)
 	e.GET("/status/version", controllers.ServerController{}.Version)
 
-	//login
-	e.POST("/login", app.Application.Container.GetAuthController().Login)
+	v1 := e.Group("/v1")
 
-	r := e.Group("/restricted")
+	//login
+	v1.POST("/login", app.Application.Container.GetAuthController().Login)
+
+	r := v1.Group("/restricted")
 
 	c := middleware.JWTConfig{
 		Claims:     &config.JwtCustomClaims{},
@@ -36,6 +49,7 @@ func Route(e *echo.Echo) {
 	}
 
 	r.Use(middleware.JWTWithConfig(c))
+	r.Use(app.Application.Container.GetAuthMiddleware().AuthMiddleware)
 
 	//user
 	r.GET("/users/:user", app.Application.Container.GetUserController().Show,GMiddleware.Or(app.Application.Container.GetIsVerifiedMiddleware()))

@@ -1,11 +1,9 @@
 package controllers
 
 import (
-	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"gotham/config"
 	"gotham/models"
-	"gotham/models/scopes"
 	"gotham/policies"
 	"gotham/requests"
 	"gotham/services"
@@ -19,36 +17,38 @@ type UserController struct {
 	UserPolicy policies.IUserPolicy
 }
 
-/**
-* index
-*
-* @param echo.Context
-* @return error
- */
+// User godoc
+// @Summary List of users
+// @Description
+// @Tags User
+// @Accept  json
+// @Accept  multipart/form-data
+// @Accept  application/x-www-form-urlencoded
+// @Produce json
+// @Param token header string true "Bearer Token"
+// @Success 200 {object} viewModels.Paginator{data=[]models.User}
+// @Failure 400 {object} viewModels.Message{}
+// @Failure 401 {object} viewModels.Message{}
+// @Failure 500 {object} viewModels.Message{}
+// @Router /v1/r/users [get]
 func (u UserController) Index(c echo.Context) (err error) {
 
+	auth := config.AuthUser(c.Get("auth"))
+
 	// Request Bind And Validation
-	request := new(scopes.Pagination)
-
-	if err = c.Bind(request); err != nil {
-		return
+	request := new(requests.UserIndexRequest)
+	if err := (&echo.DefaultBinder{}).BindQueryParams(c, &request.QueryParams); err != nil {
+		return err
 	}
-
-	var users []models.User
-	users, err = u.UserService.GetUsers(request)
-	if err != nil {
-		return echo.ErrInternalServerError
-	}
-
-	token := c.Get("user").(*jwt.Token)
-	claims := token.Claims.(*config.JwtCustomClaims)
 
 	// Policy Control
-	if !u.UserPolicy.Index(claims) {
+	if !u.UserPolicy.Index(auth) {
 		return c.JSON(http.StatusForbidden, viewModels.MResponse("unauthorized transaction detected "))
 	}
 
-	count, err := u.UserService.GetUsersCount()
+	var count int64
+	var users []models.User
+	users, count ,err = u.UserService.GetUsersWithPagination(&request.QueryParams.Pagination)
 	if err != nil {
 		return echo.ErrInternalServerError
 	}
@@ -57,44 +57,56 @@ func (u UserController) Index(c echo.Context) (err error) {
 	return c.JSON(http.StatusOK, viewModels.SuccessResponse(viewModels.Paginator{
 		TotalRecord: int(count),
 		Records:     users,
-		Limit:       request.Limit,
-		Page:        request.Page,
+		Limit:       request.QueryParams.Pagination.Limit,
+		Page:        request.QueryParams.Pagination.Page,
 	}))
 }
 
-/**
-* Show
-*
-* @param echo.Context
-* @return error
- */
+// User godoc
+// @Summary Get User
+// @Description
+// @Tags User
+// @Accept  json
+// @Accept  multipart/form-data
+// @Accept  application/x-www-form-urlencoded
+// @Produce json
+// @Param token header string true "Bearer Token"
+// @Success 200 {object} viewModels.HTTPSuccessResponse{data=models.User}
+// @Failure 404 {object} viewModels.Message{}
+// @Failure 401 {object} viewModels.Message{}
+// @Failure 400 {object} viewModels.Message{}
+// @Failure 403 {object} viewModels.Message{}
+// @Failure 500 {object} viewModels.Message{}
+// @Router /v1/r/users/:user [get]
 func (u UserController) Show(c echo.Context) (err error) {
+
+	auth := config.AuthUser(c.Get("auth"))
 
 	// Request Bind And Validation
 
 	request := new(requests.UserShowRequest)
 
-	if err = c.Bind(request); err != nil {
-		return
+	if err := (&echo.DefaultBinder{}).BindPathParams(c, &request.PathParams); err != nil {
+		return err
+	}
+	
+	if err := (&echo.DefaultBinder{}).BindBody(c, &request.Body); err != nil {
+		return err
 	}
 
 	v := request.Validate()
-
 	if v != nil {
 		return c.JSON(http.StatusUnprocessableEntity, viewModels.ValidationResponse(v))
 	}
 
 	var user models.User
-	user, err = u.UserService.GetUserByID(request.User)
+	user, err = u.UserService.GetUserByID(request.PathParams.User)
 	if err != nil {
 		return echo.ErrInternalServerError
 	}
 
-	token := c.Get("user").(*jwt.Token)
-	claims := token.Claims.(*config.JwtCustomClaims)
-
 	// Policy Control
-	if !u.UserPolicy.Show(claims) {
+	if !u.UserPolicy.Show(auth, user) {
 		return c.JSON(http.StatusForbidden, viewModels.MResponse("unauthorized transaction detected "))
 	}
 
