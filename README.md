@@ -8,6 +8,7 @@ I have designed go-gotham boilerplate adhering to SOLID principles for developer
 - Echo ( https://echo.labstack.com )
 - Gorm (https://gorm.io)
 - Ozzo-Validation (https://github.com/go-ozzo/ozzo-validation)
+- Echo Swagger (https://github.com/swaggo/echo-swagger)
 - GoCron (https://github.com/jasonlvhit/gocron)
 
 ## Table of contents
@@ -18,8 +19,12 @@ I have designed go-gotham boilerplate adhering to SOLID principles for developer
 
 - [Install](#install)
 - [Controllers](#controllers)
+- [Policies](#policies)
 - [Services](#services)
+- [Emails](#emails)
+  * [Renderer](#renderer)
 - [Repositories](#repositories)
+- [Seeds](#seeds)
 - [Middlewares](#conditional-middlewares):
   * [Conditional Middlewares](#conditional-middlewares)
 - [Definitions](#definitions)
@@ -65,35 +70,48 @@ type UserController struct {
     UserService services.IUserService
 }
 
-/**
- * index
- *
- * @param echo.Context
- * @return error
- */
+// User godoc
+// @Summary List of users
+// @Description
+// @Tags User
+// @Accept  json
+// @Accept  multipart/form-data
+// @Accept  application/x-www-form-urlencoded
+// @Produce json
+// @Param token header string true "Bearer Token"
+// @Success 200 {object} viewModels.Paginator{data=[]models.User}
+// @Failure 400 {object} viewModels.Message{}
+// @Failure 401 {object} viewModels.Message{}
+// @Failure 500 {object} viewModels.Message{}
+// @Router /v1/r/users [get]
 func (u UserController) Index(c echo.Context) (err error) {
 
-    request := new(scopes.Pagination)
+    auth := config.AuthUser(c.Get("auth"))
 
-    if err = c.Bind(request); err != nil {
-        return
+    // Request Bind And Validation
+    request := new(requests.UserIndexRequest)
+    if err := (&echo.DefaultBinder{}).BindQueryParams(c, &request.QueryParams); err != nil {
+        return err
     }
 
-    users, err := u.UserService.GetUsers(request, "name")
+    // Policy Control
+    if !u.UserPolicy.Index(auth) {
+        return c.JSON(http.StatusForbidden, viewModels.MResponse("unauthorized transaction detected "))
+    }
+
+    var count int64
+    var users []models.User
+    users, count ,err = u.UserService.GetUsersWithPagination(&request.QueryParams.Pagination)
     if err != nil {
         return echo.ErrInternalServerError
     }
 
-    count, err := u.UserService.GetUsersCount()
-    if err != nil {
-        return echo.ErrInternalServerError
-    }
-
-    return c.JSON(http.StatusOK, helpers.SuccessResponse(viewModels.Paginator{
+    // Response
+    return c.JSON(http.StatusOK, viewModels.SuccessResponse(viewModels.Paginator{
         TotalRecord: int(count),
         Records:     users,
-        Limit:       request.Limit,
-        Page:        request.Page,
+        Limit:       request.QueryParams.Pagination.Limit,
+        Page:        request.QueryParams.Pagination.Page,
     }))
 }
 ```
@@ -101,7 +119,7 @@ func (u UserController) Index(c echo.Context) (err error) {
 
 routes/api.go
 ```go
-r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And([]GMiddleware.IConditionalMiddleware{app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()}))
+r.GET("/users", app.Application.Container.GetUserController().Index,GMiddleware.And(app.Application.Container.GetIsAdminMiddleware(),app.Application.Container.GetIsVerifiedMiddleware()))
 ```
 
 #### Injection
@@ -115,7 +133,7 @@ var ControllerDefs = []dingo.Def{
         Scope: di.App,
         Build: func(service services.IUserService) (controllers.UserController, error) {
             return controllers.UserController{
-        UserService: service,
+                UserService: service,
         }, nil
     },
         Params: dingo.Params{
@@ -136,17 +154,16 @@ The services folder is where the business logic is based. It is responsible for 
 services/userService.go
 ```go
 type IUserService interface {
-    GetUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
-    GetUserByID(id int) (models.User, error)
+    GetUsersWithPagination(pagination *scopes.Pagination) (users []models.User, totalCount int64 , err error)
+    GetUserByID(id uint) (models.User, error)
     GetUserByEmail(email string) (models.User, error)
-    GetUsersCount() (int64, error)
 }
 
 type UserService struct {
     UserRepository repositories.IUserRepository
 }
 
-func (service *UserService) GetUserByID(id int) (user models.User, err error) {
+func (service *UserService) GetUserByID(id uint) (user models.User, err error) {
     return service.UserRepository.GetUserByID(id)
 }
 
@@ -154,12 +171,12 @@ func (service *UserService) GetUserByEmail(email string) (user models.User, err 
     return service.UserRepository.GetUserByEmail(email)
 }
 
-func (service *UserService) GetUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
-    return service.UserRepository.GetUsers(pagination, orderDefault)
-}
-
-func (service *UserService) GetUsersCount() (count int64, err error) {
-    return service.UserRepository.GetUsersCount()
+func (service *UserService) GetUsersWithPagination(pagination *scopes.Pagination) (users []models.User, totalCount int64 , err error) {
+    var userIDs []uint
+    userIDs , err = service.UserRepository.GetUserIDs()
+    totalCount = int64(len(userIDs))
+    users, err = service.UserRepository.GetUsersWithPagination(userIDs, pagination)
+    return
 }
 ```
 
@@ -195,18 +212,72 @@ The repositories folder is the data access layer. All database queries made must
 repositories/userRepository.go
 ```go
 type IUserRepository interface {
-    GetUserByID(id int) (models.User, error)
+    IMigrate
+    ISeed
+
+    GetUserByID(ID uint) (models.User, error)
     GetUserByEmail(email string) (models.User, error)
-    GetUsers(pagination *scopes.Pagination, orderDefault string) ([]models.User, error)
-    GetUsersCount() (int64, error)
+
+    // Getter Options
+    GetUsersWithPagination(userIDs []uint, pagination *scopes.Pagination) ([]models.User, error)
+
+    // Create & Save & Updates & Delete
+    Create(user *models.User) (err error)
+    Save(user *models.User) (err error)
+    Updates(user *models.User, updates map[string]interface{}) (err error)
+    Delete(user *models.User) (err error)
+
+    // Getters
+    GetUserIDs() (userIDs []uint, err error)
 }
 
 type UserRepository struct {
     infrastructures.IGormDatabase
 }
 
-func (repository *UserRepository) GetUserByID(id int) (user models.User, err error) {
-    err = repository.DB().First(&user, id).Error
+/**
+ * Seed
+ *
+ * @return error
+ */
+func (repository *UserRepository) Seed() (err error) {
+    for i := 0; i < 50; i++ {
+        hashedPassword, _ := helpers.Hash("password")
+        image := faker.Avatar().Url("jpg", 100, 200)
+        var user = models.User{
+            Name: faker.Name().FirstName(),
+            Email: faker.Internet().Email(),
+            Password: string(hashedPassword),
+            Image: &image ,
+            Admin: true,
+            Verified: true,
+        }
+
+        if err := repository.DB().Create(&user).Error; err != nil {
+            return err
+        }
+    }
+    
+    return nil
+}
+
+/**
+ * Migrate
+ *
+ * @return error
+ */
+
+func (repository *UserRepository) Migrate() (err error) {
+    return repository.DB().AutoMigrate(models.User{})
+}
+
+func (repository *UserRepository) GetUsersWithPagination(userIDs []uint, pagination *scopes.Pagination) (users []models.User, err error) {
+    err = repository.DB().Scopes(pagination.Paginate("users","id", []interface{}{userIDs},"created_at", "updated_at")).Find(&users).Error
+    return
+}
+
+func (repository *UserRepository) GetUserByID(ID uint) (user models.User, err error) {
+    err = repository.DB().First(&user, ID).Error
     return
 }
 
@@ -215,16 +286,37 @@ func (repository *UserRepository) GetUserByEmail(email string) (user models.User
     return
 }
 
-func (repository *UserRepository) GetUsers(pagination *scopes.Pagination, orderDefault string) (users []models.User, err error) {
-    err = repository.DB().Scopes(pagination.Paginate(models.User{} , orderDefault)).Find(&users).Error
+/**
+ * Create & Update & Delete
+ *
+ */
+
+func (repository *UserRepository) Create(user *models.User) (err error) {
+    return repository.DB().Create(user).Error
+}
+
+func (repository *UserRepository) Save(user *models.User) (err error) {
+    return repository.DB().Save(user).Error
+}
+
+func (repository *UserRepository) Updates(user *models.User, updates map[string]interface{}) (err error) {
+    return repository.DB().Model(user).Updates(updates).Error
+}
+
+func (repository *UserRepository) Delete(user *models.User) (err error) {
+    return repository.DB().Delete(user).Error
+}
+
+/**
+ * Getters
+ *
+ */
+
+func (repository *UserRepository) GetUserIDs() (userIDs []uint, err error) {
+    err = repository.DB().Model(&models.User{}).Pluck("id", &userIDs).Error
     return
 }
 
-func (repository *UserRepository) GetUsersCount() (count int64, err error) {
-    // you can user getUsersCount procedure here
-    err = repository.DB().Model(&models.User{}).Count(&count).Error
-    return
-}
 
 ```
 	
@@ -302,7 +394,7 @@ func (i IsAdmin) control(c echo.Context) (bool bool, err error) {
     u := c.Get("user").(*jwt.Token)
     claims := u.Claims.(*config.JwtCustomClaims)
 
-    user, err := i.FirstUserByID(int(claims.Id))
+    user, err := i.FirstUserByID(int(claims.AuthID))
 
     if err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -316,33 +408,6 @@ func (i IsAdmin) control(c echo.Context) (bool bool, err error) {
     }
 
     return false, errors.New("you are not admin")
-}
-
-```
-
-middlewares/isVerified.go
-```go
-type IsVerified struct{
-    services.IUserService
-}
-
-func (i IsVerified) control(c echo.Context) (bool bool, err error) {
-    u := c.Get("user").(*jwt.Token)
-    claims := u.Claims.(*config.JwtCustomClaims)
-
-    user, err := i.FirstUserByID(int(claims.Id))
-    if err != nil {
-        if errors.Is(err, gorm.ErrRecordNotFound) {
-            return false, echo.ErrUnauthorized
-        }
-        return false, echo.ErrInternalServerError
-    }
-
-    if user.IsVerified() {
-        return true, nil
-    }
-
-    return false, errors.New("your email not verified")
 }
 
 ```
@@ -572,7 +637,7 @@ func (u *User) VerifyPassword(password string) bool {
  * @return bool
  */
 func (u *User) IsVerified() bool {
-    return u.Verified == 1
+    return u.Verified
 }
 
 /**
@@ -581,7 +646,7 @@ func (u *User) IsVerified() bool {
  * @return bool
  */
 func (u *User) IsAdmin() bool {
-    return u.Admin == 1
+    return u.Admin
 }
 ```
 
@@ -647,14 +712,23 @@ type ExampleRequest struct {
     validation.Validatable `json:"-" form:"-" query:"-"`
 
     /**
-    * PAGINATION
-    */
-    Pagination Pagination
+     * PathParams
+     */
+    PathParams struct{
+    }
 
     /**
-    * BODY
+    * QueryParams
+     */
+    QueryParams struct{
+        scopes.Pagination
+    }
+
+    /**
+    * Body
     */
-    Verified int `json:"verified" form:"verified" query:"verified"`
+    Body struct{
+    }
 }
 ```
 
@@ -735,18 +809,32 @@ Request Object
 ```go
 type LoginRequest struct {
     validation.Validatable `json:"-" form:"-" query:"-"`
- 
+
     /**
-    * BODY
+    * PathParams
     */
-    Email    string `json:"email" form:"email" query:"email"`
-    Password string `json:"password" form:"password" query:"password"`
+    PathParams struct{
+    }
+
+    /**
+     * QueryParams
+     */
+    QueryParams struct{
+    }
+
+    /**
+    * Body
+     */
+    Body struct{
+        Email    string `json:"email" form:"email" query:"email"`
+        Password string `json:"password" form:"password" query:"password"`
+    }
 }
 
 func (r LoginRequest) Validate() error {
-    return validation.ValidateStruct(&r,
-        validation.Field(&r.Email, validation.Required, validation.Length(4, 50), is.Email),
-        validation.Field(&r.Password, validation.Required, validation.Length(8, 50)),
+    return validation.ValidateStruct(&r.Body,
+        validation.Field(&r.Body.Email, validation.Required, validation.Length(4, 50), is.Email),
+        validation.Field(&r.Body.Password, validation.Required, validation.Length(8, 50)),
     )
 }
 ```
@@ -754,22 +842,17 @@ func (r LoginRequest) Validate() error {
 In Controller Usage
 
 ```go
-request := new(requests.LoginRequest)
-
-if err = c.Bind(request); err != nil {
-    return
-}
-
-v := request.Validate()
-
-if v != nil {
-    return c.JSON(http.StatusUnprocessableEntity, map[string]interface{}{
-         "errors": v,
-    })
-}
-
-// you can access binded request object
-fmt.println(request.Email)
+	// Request Bind And Validation
+    request := new(requests.LoginRequest)
+    if err := (&echo.DefaultBinder{}).BindBody(c, &request.Body); err != nil {
+        return err
+    }
+    v := request.Validate()
+    if v != nil {
+        return c.JSON(http.StatusUnprocessableEntity, viewModels.ValidationResponse(v))
+    }
+    // you can access binded request object
+    fmt.println(request.Body.Email)
 ```
 
 ### More Info For Validations Rules
@@ -814,11 +897,14 @@ func (r ExampleRequest) Validate() error {
 config/jwt.go
 ```go
 type JwtCustomClaims struct {
-    Id               uint   `json:"id"`
-    Name             string `json:"name"`
-    Email            string `json:"email"`
+    AuthID   uint     `json:"auth_id"`
     jwt.StandardClaims
 }
+
+func AuthUser(claims interface{}) models.User {
+    return claims.(models.User)
+}
+
 ```
 
 #### Middleware
@@ -833,6 +919,7 @@ c := middleware.JWTConfig{
 }
 
 r.Use(middleware.JWTWithConfig(c))
+r.Use(app.Application.Container.GetAuthMiddleware().AuthMiddleware)
 ```
 
 #### LoginController
@@ -842,18 +929,16 @@ controllers/authController.go
 accessTokenExp := time.Now().Add(time.Minute * 15).Unix()
 
 claims := &config.JwtCustomClaims{
-    Id:    user.ID,
-    Name:  user.Name,
-    Email: user.Email,
+    AuthID:    user.ID,
     StandardClaims: jwt.StandardClaims{
-        ExpiresAt: accessTokenExp,
+    ExpiresAt: accessTokenExp,
     },
 }
 
 token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-accessToken, err := token.SignedString([]byte(config.Conf.SecretKey))
-
+var accessToken string
+accessToken, err = token.SignedString([]byte(config.Conf.SecretKey))
 if err != nil {
     return
 }
@@ -867,8 +952,7 @@ return c.JSON(http.StatusOK, helpers.SuccessResponse(viewModels.Login{
 
 You can find the information about who owns the token in any controllers or middleware.
 ```go
-u := c.Get("user").(*jwt.Token)
-claims := u.Claims.(*config.JwtCustomClaims)
+auth := config.AuthUser(c.Get("auth"))
 ```
 
 ## Jobs
@@ -876,7 +960,6 @@ Check out GoCron https://github.com/jasonlvhit/gocron
 
 ## Features To Be Added Soon
 
-- Database seeder
 - Unit testing
 
 ## Author
