@@ -1,0 +1,225 @@
+definitions:
+  models.User:
+    properties:
+      admin:
+        type: boolean
+      created_at:
+        description: Time
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+      verified:
+        type: boolean
+    type: object
+  viewModels.HTTPErrorResponse:
+    properties:
+      errors:
+        type: object
+    type: object
+  viewModels.HTTPSuccessResponse:
+    properties:
+      data:
+        type: object
+    type: object
+  viewModels.Login:
+    properties:
+      access_token:
+        type: string
+      access_token_exp:
+        type: integer
+      user:
+        $ref: '#/definitions/models.User'
+    type: object
+  viewModels.Message:
+    properties:
+      message:
+        type: string
+    type: object
+  viewModels.Paginator:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      records:
+        type: object
+      total_record:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /status/ping:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/viewModels.Message'
+        "500":
+          description: ""
+      tags:
+      - Server
+  /status/version:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/viewModels.Message'
+        "500":
+          description: ""
+      tags:
+      - Server
+  /v1/login:
+    post:
+      consumes:
+      - application/json
+      - multipart/form-data
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: <code>required</code>  <code>min:4</code> <code>max:50</code> <code>must be email</code>
+        in: body
+        maxLength: 50
+        minLength: 4
+        name: email
+        required: true
+        schema:
+          type: string
+      - description: <code>required</code>  <code>min:8</code> <code>max:50</code>
+        in: body
+        maxLength: 50
+        minLength: 8
+        name: password
+        required: true
+        schema:
+          type: string
+      - description: <code>required</code>  <code>In('panel', 'web', 'mobile')/code>
+        in: body
+        name: platform
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/viewModels.HTTPSuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/viewModels.Login'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/viewModels.Message'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/viewModels.HTTPErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/viewModels.Message'
+      tags:
+      - Auth
+  /v1/r/users:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/viewModels.Paginator'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.User'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/viewModels.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/viewModels.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/viewModels.Message'
+      summary: List of users
+      tags:
+      - User
+  /v1/r/users/:user:
+    get:
+      consumes:
+      - application/json
+      - multipart/form-data
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/viewModels.HTTPSuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/viewModels.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/viewModels.Message'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/viewModels.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/viewModels.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/viewModels.Message'
+      summary: Get User
+      tags:
+      - User
+swagger: "2.0"
