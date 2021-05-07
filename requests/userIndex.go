@@ -2,7 +2,7 @@ package requests
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
-	"gotham/models/scopes"
+	"gotham/utils"
 )
 
 type UserIndexRequest struct {
@@ -18,7 +18,8 @@ type UserIndexRequest struct {
 	 * QueryParams
 	 */
 	QueryParams struct{
-		scopes.Pagination
+		utils.Order
+		utils.Pagination
 	}
 
 	/**

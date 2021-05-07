@@ -23,6 +23,15 @@ type User struct {
 }
 
 /**
+ * TableName
+ *
+ * @return string
+ */
+func (User) TableName() string {
+	return "users"
+}
+
+/**
  * VerifyPassword
  *
  * @param string , string

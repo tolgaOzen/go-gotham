@@ -4,10 +4,11 @@ import (
 	"gotham/models"
 	"gotham/models/scopes"
 	"gotham/repositories"
+	"gotham/utils"
 )
 
 type IUserService interface {
-	GetUsersWithPagination(pagination *scopes.Pagination) (users []models.User, totalCount int64 , err error)
+	GetUsersWithPaginationAndOrder(pagination utils.IPagination, order utils.IOrder) (users []models.User, totalCount int64 , err error)
 	GetUserByID(id uint) (models.User, error)
 	GetUserByEmail(email string) (models.User, error)
 }
@@ -24,11 +25,11 @@ func (service *UserService) GetUserByEmail(email string) (user models.User, err 
 	return service.UserRepository.GetUserByEmail(email)
 }
 
-func (service *UserService) GetUsersWithPagination(pagination *scopes.Pagination) (users []models.User, totalCount int64 , err error) {
+func (service *UserService) GetUsersWithPaginationAndOrder(pagination utils.IPagination, order utils.IOrder) (users []models.User, totalCount int64 , err error) {
 	var userIDs []uint
 	userIDs , err = service.UserRepository.GetUserIDs()
 	totalCount = int64(len(userIDs))
-	users, err = service.UserRepository.GetUsersWithPagination(userIDs, pagination)
+	users, err = service.UserRepository.GetUsersWithPaginationAndOrder(userIDs, &scopes.GormPagination{Pagination: pagination.Get()}, &scopes.GormOrder{Order: order.Get()})
 	return
 }
 

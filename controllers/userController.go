@@ -48,17 +48,17 @@ func (u UserController) Index(c echo.Context) (err error) {
 
 	var count int64
 	var users []models.User
-	users, count ,err = u.UserService.GetUsersWithPagination(&request.QueryParams.Pagination)
+	users, count ,err = u.UserService.GetUsersWithPaginationAndOrder(&request.QueryParams.Pagination, &request.QueryParams.Order)
 	if err != nil {
 		return echo.ErrInternalServerError
 	}
 
 	// Response
 	return c.JSON(http.StatusOK, viewModels.SuccessResponse(viewModels.Paginator{
-		TotalRecord: int(count),
+		TotalRecord: count,
 		Records:     users,
-		Limit:       request.QueryParams.Pagination.Limit,
-		Page:        request.QueryParams.Pagination.Page,
+		Limit:       request.QueryParams.Pagination.GetLimit(),
+		Page:        request.QueryParams.Pagination.GetPage(),
 	}))
 }
 

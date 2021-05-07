@@ -14,7 +14,7 @@ type IUserPolicy interface {
 type UserPolicy struct {}
 
 func (UserPolicy) Index(auth models.User) bool  {
-	return auth.ID == 1
+	return auth.Admin
 }
 
 func (UserPolicy) Show(auth models.User, user models.User) bool  {
@@ -22,9 +22,9 @@ func (UserPolicy) Show(auth models.User, user models.User) bool  {
 }
 
 func (UserPolicy) Update(auth models.User, user models.User) bool  {
-	return auth.ID == user.ID
+	return auth.ID == user.ID && user.Verified
 }
 
 func (UserPolicy) Delete(auth models.User, user models.User) bool  {
-	return auth.ID == user.ID
+	return auth.ID == user.ID && user.Verified
 }

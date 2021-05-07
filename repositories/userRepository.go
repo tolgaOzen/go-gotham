@@ -16,7 +16,7 @@ type IUserRepository interface {
 	GetUserByEmail(email string) (models.User, error)
 
 	// Getter Options
-	GetUsersWithPagination(userIDs []uint, pagination *scopes.Pagination) ([]models.User, error)
+	GetUsersWithPaginationAndOrder(userIDs []uint, pagination scopes.GormPager, order scopes.GormOrderer) ([]models.User, error)
 
 	// Create & Save & Updates & Delete
 	Create(user *models.User) (err error)
@@ -67,8 +67,8 @@ func (repository *UserRepository) Migrate() (err error) {
 	return repository.DB().AutoMigrate(models.User{})
 }
 
-func (repository *UserRepository) GetUsersWithPagination(userIDs []uint, pagination *scopes.Pagination) (users []models.User, err error) {
-	err = repository.DB().Scopes(pagination.Paginate("users","id", []interface{}{userIDs},"created_at", "updated_at")).Find(&users).Error
+func (repository *UserRepository) GetUsersWithPaginationAndOrder(userIDs []uint, pagination scopes.GormPager, order scopes.GormOrderer) (users []models.User, err error) {
+	err = repository.DB().Scopes(order.ToOrder(models.User{}.TableName(),"id", []interface{}{userIDs},"created_at", "updated_at")).Scopes(pagination.ToPaginate()).Find(&users).Error
 	return
 }
 
