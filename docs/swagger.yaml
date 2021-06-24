@@ -36,7 +36,7 @@ definitions:
       access_token_exp:
         type: integer
       user:
-        $ref: '#/definitions/models.User'
+        type: object
     type: object
   viewModels.Message:
     properties:

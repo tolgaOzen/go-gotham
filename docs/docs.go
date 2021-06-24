@@ -345,7 +345,7 @@ var doc = `{
                     "type": "integer"
                 },
                 "user": {
-                    "$ref": "#/definitions/models.User"
+                    "type": "object"
                 }
             }
         },

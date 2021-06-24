@@ -4,6 +4,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
 	"gotham/config"
 )
 
@@ -37,7 +38,7 @@ func (g *GormDatabase) DB() *gorm.DB {
  *
  */
 func NewGormDatabase(pool IGormDatabasePool) (*GormDatabase, error) {
-	connection, err := gorm.Open(pool.GetDialector(), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true})
+	connection, err := gorm.Open(pool.GetDialector(), &gorm.Config{})
 	return &GormDatabase{
 		Pool:     pool,
 		Database: connection,

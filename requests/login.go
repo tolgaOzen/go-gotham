@@ -24,8 +24,8 @@ type LoginRequest struct {
     * Body
     */
 	Body struct{
-		Email    string `json:"email" form:"email" query:"email"`
-		Password string `json:"password" form:"password" query:"password"`
+		Email    string `json:"email" form:"email" xml:"email"`
+		Password string `json:"password" form:"password" xml:"password"`
 	}
 }
 
