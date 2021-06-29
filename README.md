@@ -45,7 +45,7 @@ git clone https://github.com/tolgaOzen/go-gotham
   |- rules
   |- services
   |- utils
-  |- viewmodels
+  |- viewModels
   |- views - (for mails)
   main.go
   .env
@@ -53,26 +53,26 @@ git clone https://github.com/tolgaOzen/go-gotham
   App - DI Container
   The container part is the part that all of our objects are injected through interfaces, as we specified in definitions.
   
-  ##Controllers
+  ### Controllers
   Controllers are the handlers of all requests coming to the route.
   The controller can implement interfaces to many services to meet the needs of the request. The controller must be unaware of the logic of the services.
- 
-  ##Middlewares
+
+  ### Middlewares
   Middlewares work before the request reaches the controller. These are the parts where you can perform authorization check, record requests, limit the number of requests etc. Middlewares can implement service interfaces. This way, they can check the data.
-  
-  ##Policies
+
+  ### Policies
   Policies folder consists of sections that check if the authorized user is eligible to perform this action.
-  
-  ##Services
+
+  ### Services
   Services folder is where the business logic is based. It is responsible for processing the request from the controller. It takes data from the data layer (repositories) and works to meet what the controller expects.
- 
-  ##Repositories
+
+  ### Repositories
   Repositories folder is the data access layer. All database queries made must be performed in the repositories.
- 
-  ##Models
+
+  ### Models
   Models folder hosts all structs under models namespace, model is a struct reflecting our data object from / to database. models should only define data structs, no other functionalities should be included here.
- 
-  ##ViewModels
+
+  ### ViewModels
   ViewModels folder hosts all the structs under viewmodels namespace, viewmodels are model to be use as a response return of REST API call
   
 ## Author
