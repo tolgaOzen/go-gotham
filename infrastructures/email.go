@@ -3,8 +3,9 @@ package infrastructures
 import (
 	"fmt"
 	"github.com/jordan-wright/email"
-	"gotham/config"
 	"net/smtp"
+
+	"gotham/config"
 )
 
 // Email Service
@@ -23,10 +24,10 @@ type IEmailService interface {
  *
  */
 type EmailService struct {
-	Config  *config.EmailConfig
+	Config  *config.Email
 }
 
-func NewEmailService(emailConfig *config.EmailConfig) IEmailService {
+func NewEmailService(emailConfig *config.Email) IEmailService {
 	return &EmailService{
 		Config:  emailConfig,
 	}

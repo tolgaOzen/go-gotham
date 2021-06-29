@@ -5,20 +5,21 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
+	"net/http"
+	"time"
+
 	"gotham/config"
 	"gotham/models"
 	"gotham/requests"
 	"gotham/services"
 	"gotham/viewModels"
-	"net/http"
-	"time"
 )
 
 type AuthController struct {
 	AuthService services.IAuthService
 }
 
-// Auth godoc
+// Login godoc
 // @Summary
 // @Description
 // @Tags Auth

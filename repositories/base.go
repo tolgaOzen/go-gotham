@@ -1,9 +1,9 @@
 package repositories
 
-type ISeed interface {
+type Seedable interface {
 	Seed() error
 }
 
-type IMigrate interface {
+type Migratable interface {
 	Migrate() error
 }

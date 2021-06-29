@@ -5,14 +5,15 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
+	"os"
+	"os/signal"
+	"time"
+
 	"gotham/app"
 	"gotham/config"
 	"gotham/controllers"
 	"gotham/docs"
 	GMiddleware "gotham/middlewares"
-	"os"
-	"os/signal"
-	"time"
 )
 
 
@@ -22,7 +23,7 @@ func Route(e *echo.Echo) {
 	docs.SwaggerInfo.Title = "Gotham API"
 	docs.SwaggerInfo.Description = "..."
 	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = "fluffzy.com"
+	docs.SwaggerInfo.Host = "''"
 	docs.SwaggerInfo.BasePath = "/"
 	docs.SwaggerInfo.Schemes = []string{"v1"}
 

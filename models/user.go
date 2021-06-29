@@ -59,3 +59,8 @@ func (u *User) IsVerified() bool {
 func (u *User) IsAdmin() bool {
 	return u.Admin
 }
+
+// ConvertUser /**
+func ConvertUser(claims interface{}) User {
+	return claims.(User)
+}

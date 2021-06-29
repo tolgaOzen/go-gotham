@@ -2,13 +2,13 @@ package controllers
 
 import (
 	"github.com/labstack/echo/v4"
-	"gotham/config"
+	"net/http"
+
 	"gotham/models"
 	"gotham/policies"
 	"gotham/requests"
 	"gotham/services"
 	"gotham/viewModels"
-	"net/http"
 )
 
 type UserController struct {
@@ -17,7 +17,7 @@ type UserController struct {
 	UserPolicy policies.IUserPolicy
 }
 
-// User godoc
+// Index godoc
 // @Summary List of users
 // @Description
 // @Tags User
@@ -33,7 +33,7 @@ type UserController struct {
 // @Router /v1/r/users [get]
 func (u UserController) Index(c echo.Context) (err error) {
 
-	auth := config.AuthUser(c.Get("auth"))
+	auth := models.ConvertUser(c.Get("auth"))
 
 	// Request Bind And Validation
 	request := new(requests.UserIndexRequest)
@@ -62,7 +62,7 @@ func (u UserController) Index(c echo.Context) (err error) {
 	}))
 }
 
-// User godoc
+// Show godoc
 // @Summary Get User
 // @Description
 // @Tags User
@@ -80,7 +80,7 @@ func (u UserController) Index(c echo.Context) (err error) {
 // @Router /v1/r/users/:user [get]
 func (u UserController) Show(c echo.Context) (err error) {
 
-	auth := config.AuthUser(c.Get("auth"))
+	auth := models.ConvertUser(c.Get("auth"))
 
 	// Request Bind And Validation
 

@@ -24,7 +24,7 @@ type Config struct {
 	BaseUrl   string
 	Db        Database
 	SecretKey string
-	Email     EmailConfig
+	Email     Email
 	Brand     struct {
 		ProjectName   string
 		ProjectUrl    string

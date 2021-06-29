@@ -1,16 +1,17 @@
 package repositories
 
 import (
+	"syreclabs.com/go/faker"
+
 	"gotham/helpers"
 	"gotham/infrastructures"
 	"gotham/models"
 	"gotham/models/scopes"
-	"syreclabs.com/go/faker"
 )
 
 type IUserRepository interface {
-	IMigrate
-	ISeed
+	Migratable
+	Seedable
 
 	GetUserByID(ID uint) (models.User, error)
 	GetUserByEmail(email string) (models.User, error)
