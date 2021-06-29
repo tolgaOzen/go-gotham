@@ -19,8 +19,11 @@ You can start using this repository by cloning it.
 ```
 git clone https://github.com/tolgaOzen/go-gotham
 ```
+
+## FOLDER STRUCTURE
+
 ```
-  FOLDER STRUCTURE
+
   /
   |- app
     |- container
@@ -31,7 +34,7 @@ git clone https://github.com/tolgaOzen/go-gotham
   |- controllers
   |- database
     |- migrations
-    |-seeds
+    |- seeds
   |- docs
   |- helpers
   |- infrastructures
