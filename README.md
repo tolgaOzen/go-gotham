@@ -19,7 +19,7 @@ You can start using this repository by cloning it.
 ```
 git clone https://github.com/tolgaOzen/go-gotham
 ```
-
+```
   FOLDER STRUCTURE
   /
   |- app
@@ -49,6 +49,7 @@ git clone https://github.com/tolgaOzen/go-gotham
   |- views - (for mails)
   main.go
   .env
+```
 
   App - DI Container
   The container part is the part that all of our objects are injected through interfaces, as we specified in definitions.
