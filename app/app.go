@@ -1,15 +1,31 @@
 package app
 
 import (
+	`fmt`
 	"github.com/sarulabs/di/v2"
-	"gotham/app/container/dic"
+	`github.com/sarulabs/dingo/v4`
 	"log"
+	`os`
+
+	"gotham/app/container/dic"
+	`gotham/app/flags`
+	"gotham/app/provider"
 )
 
 var Application *App
 
 type App struct {
 	Container *dic.Container
+}
+
+func init() {
+	if !*flags.Production {
+		err := dingo.GenerateContainer((*provider.Provider)(nil), "./app/container")
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+	}
 }
 
 /**

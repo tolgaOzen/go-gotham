@@ -1,8 +1,12 @@
 package seeds
 
-import "gotham/app"
+import (
+	`gotham/app`
+	`gotham/app/flags`
+)
 
 func Initialize() {
-	_ = app.Application.Container.GetUserRepository().Seed()
+	if *flags.Seed {
+		_ = app.Application.Container.GetUserRepository().Seed()
+	}
 }
-

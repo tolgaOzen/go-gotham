@@ -20,14 +20,44 @@ You can start using this repository by cloning it.
 git clone https://github.com/tolgaOzen/go-gotham
 ```
 
+## Env
+change with your database credentials
+
+```dotenv
+#DB
+DB_CONNECTION=mysql
+DB_USERNAME=admin
+DB_DATABASE=gotham
+DB_HOST=gotham-test
+DB_PORT=3306
+DB_PASSWORD=strong_password
+```
+
+## Flags
+
+- prevents re-creating container methods from definitions
+```
+go run gotham -production
+```
+
+- run migrate methods of repositories before start
+```
+go run gotham -migrate
+```
+
+- run seed methods of repositories before start
+```
+go run gotham -seed
+```
+
 ## FOLDER STRUCTURE
 
 ```
-
   /
   |- app
     |- container
     |- defs
+    |- flags
     |- provider
     app.go
   |- config
@@ -41,8 +71,10 @@ git clone https://github.com/tolgaOzen/go-gotham
   |- mails
   |- middlewares
   |- models
+    |- scopes
   |- policies
   |- repositories
+    |- transactions
   |- requests
   |- routers
   |- rules
