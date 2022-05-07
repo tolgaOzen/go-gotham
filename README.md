@@ -2,6 +2,11 @@
 
 I have designed go-gotham boilerplate adhering to SOLID principles for developers to help them create RESTful API. I take advantage of some other libraries however, I did not neglect to add my codes into it. The aim of this boilerplate is to provide developers a common functionality which will make writing APIs efficient, convenient and testable.
 
+
+<p align="center"><a href="https://pkg.go.dev/github.com/Permify/policy-enforcer?tab=doc" 
+target="_blank"></a><img src="https://img.shields.io/badge/Go-1.17+-00ADD8?style=for-the-badge&logo=go" alt="go version" />&nbsp;&nbsp;<img src="https://img.shields.io/github/license/tolgaOzen/go-gotham?style=for-the-badge" alt="license" />&nbsp;&nbsp;<img src="https://img.shields.io/github/last-commit/tolgaOzen/go-gotham?style=for-the-badge" alt="tweet" />&nbsp;&nbsp</p>
+
+
 ## Check out the documentation of supporting projects 
 
 - Di ( https://github.com/sarulabs/di )
