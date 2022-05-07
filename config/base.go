@@ -1,9 +1,10 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 var Conf *Config
@@ -39,8 +40,8 @@ type Config struct {
 func Configurations() {
 	port := os.Getenv("API_PORT")
 	Conf = &Config{
-		Port:    port,
-		BaseUrl: os.Getenv("BASE_URL") + ":" + port,
+		Port:      port,
+		BaseUrl:   os.Getenv("BASE_URL") + ":" + port,
 		SecretKey: os.Getenv("JWT_SECRET_KEY"),
 		Email:     GetEmailConfig(),
 		Brand: struct {

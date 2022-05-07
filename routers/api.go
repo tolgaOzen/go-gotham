@@ -2,12 +2,13 @@ package routers
 
 import (
 	"context"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	echoSwagger "github.com/swaggo/echo-swagger"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
 
 	"gotham/app"
 	"gotham/config"
@@ -16,10 +17,7 @@ import (
 	GMiddleware "gotham/middlewares"
 )
 
-
-
 func Route(e *echo.Echo) {
-
 	docs.SwaggerInfo.Title = "Gotham API"
 	docs.SwaggerInfo.Description = "..."
 	docs.SwaggerInfo.Version = "1.0"
@@ -33,13 +31,13 @@ func Route(e *echo.Echo) {
 
 	e.GET("/doc/*", echoSwagger.WrapHandler)
 
-	//server
+	// server
 	e.GET("/status/ping", controllers.ServerController{}.Ping)
 	e.GET("/status/version", controllers.ServerController{}.Version)
 
 	v1 := e.Group("/v1")
 
-	//login
+	// login
 	v1.POST("/login", app.Application.Container.GetAuthController().Login)
 
 	r := v1.Group("/restricted")
@@ -52,10 +50,9 @@ func Route(e *echo.Echo) {
 	r.Use(middleware.JWTWithConfig(c))
 	r.Use(app.Application.Container.GetAuthMiddleware().AuthMiddleware)
 
-	//user
-	r.GET("/users/:user", app.Application.Container.GetUserController().Show,GMiddleware.Or(app.Application.Container.GetIsAdminMiddleware(), app.Application.Container.GetIsVerifiedMiddleware()))
+	// user
+	r.GET("/users/:user", app.Application.Container.GetUserController().Show, GMiddleware.Or(app.Application.Container.GetIsAdminMiddleware(), app.Application.Container.GetIsVerifiedMiddleware()))
 	r.GET("/users", app.Application.Container.GetUserController().Index)
-
 
 	// Start server
 	go func() {

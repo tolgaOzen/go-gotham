@@ -2,7 +2,9 @@ package GMiddleware
 
 import (
 	"fmt"
+
 	"github.com/labstack/echo/v4"
+
 	"gotham/viewModels"
 )
 

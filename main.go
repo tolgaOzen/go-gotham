@@ -3,11 +3,11 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 
-	`gotham/app`
-	`gotham/config`
-	`gotham/database/migrations`
-	`gotham/database/seeds`
-	`gotham/routers`
+	"gotham/app"
+	"gotham/config"
+	"gotham/database/migrations"
+	"gotham/database/seeds"
+	"gotham/routers"
 )
 
 func main() {

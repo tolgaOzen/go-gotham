@@ -11,13 +11,12 @@ type UserIndexRequest struct {
 	/**
 	 * PathParams
 	 */
-	PathParams struct{
-	}
+	PathParams struct{}
 
 	/**
 	 * QueryParams
 	 */
-	QueryParams struct{
+	QueryParams struct {
 		utils.Order
 		utils.Pagination
 	}
@@ -25,11 +24,9 @@ type UserIndexRequest struct {
 	/**
 	 * Body
 	 */
-	Body struct{
-	}
+	Body struct{}
 }
 
 func (r UserIndexRequest) Validate() error {
 	return nil
 }
-

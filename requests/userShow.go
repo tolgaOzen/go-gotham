@@ -10,21 +10,19 @@ type UserShowRequest struct {
 	/**
 	 * PathParams
 	 */
-	PathParams struct{
+	PathParams struct {
 		User uint `param:"user"`
 	}
 
 	/**
 	 * QueryParams
 	 */
-	QueryParams struct{
-	}
+	QueryParams struct{}
 
 	/**
 	 * Body
 	 */
-	Body struct{
-	}
+	Body struct{}
 }
 
 func (r UserShowRequest) Validate() error {

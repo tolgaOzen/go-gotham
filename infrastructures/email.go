@@ -2,8 +2,9 @@ package infrastructures
 
 import (
 	"fmt"
-	"github.com/jordan-wright/email"
 	"net/smtp"
+
+	"github.com/jordan-wright/email"
 
 	"gotham/config"
 )
@@ -24,12 +25,12 @@ type IEmailService interface {
  *
  */
 type EmailService struct {
-	Config  *config.Email
+	Config *config.Email
 }
 
 func NewEmailService(emailConfig *config.Email) IEmailService {
 	return &EmailService{
-		Config:  emailConfig,
+		Config: emailConfig,
 	}
 }
 
@@ -40,4 +41,3 @@ func NewEmailService(emailConfig *config.Email) IEmailService {
 func (e EmailService) Send(Context email.Email) error {
 	return Context.Send(fmt.Sprintf("%v:%v", e.Config.Host, e.Config.Port), smtp.PlainAuth("", e.Config.From, e.Config.Password, e.Config.Host))
 }
-

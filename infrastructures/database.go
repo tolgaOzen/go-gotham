@@ -45,7 +45,6 @@ func NewGormDatabase(pool IGormDatabasePool) (*GormDatabase, error) {
 	}, err
 }
 
-
 /**
  * IGormDatabasePool
  *
@@ -54,7 +53,6 @@ type IGormDatabasePool interface {
 	GetDialector() gorm.Dialector
 }
 
-
 /**
  * GormDatabasePool
  *
@@ -62,7 +60,6 @@ type IGormDatabasePool interface {
 type GormDatabasePool struct {
 	Dialector gorm.Dialector
 }
-
 
 /**
  * GetDialector
@@ -108,7 +105,6 @@ func NewMysqlPool(DbConfig config.Database) IGormDatabasePool {
 	}
 }
 
-
 /**
  * PostgresPool
  *
@@ -131,4 +127,3 @@ func NewPostgresPool(DbConfig config.Database) IGormDatabasePool {
 		},
 	}
 }
-

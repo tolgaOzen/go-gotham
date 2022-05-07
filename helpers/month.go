@@ -32,7 +32,7 @@ func (m MonthlyEnum) GetMonthId() int {
 }
 
 func GetMonthNameWithId(id int) string {
-	for _, m  := range Months {
+	for _, m := range Months {
 		if m.MonthID == id {
 			return m.FullName
 		}

@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	`math`
+	"math"
 )
 
 func NextPageCal(page int, totalPage int) int {

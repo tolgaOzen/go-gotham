@@ -2,7 +2,7 @@ package migrations
 
 import (
 	"gotham/app"
-	`gotham/app/flags`
+	"gotham/app/flags"
 )
 
 func Initialize() {

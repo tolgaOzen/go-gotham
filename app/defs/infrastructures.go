@@ -19,7 +19,7 @@ var InfrastructuresDefs = []dingo.Def{
 	{
 		Name:  "db",
 		Scope: di.App,
-		Build: func(pool infrastructures.IGormDatabasePool) (infrastructures.IGormDatabase,error) {
+		Build: func(pool infrastructures.IGormDatabasePool) (infrastructures.IGormDatabase, error) {
 			return infrastructures.NewGormDatabase(pool)
 		},
 		Params: dingo.Params{
@@ -33,7 +33,7 @@ var InfrastructuresDefs = []dingo.Def{
 	{
 		Name:  "email",
 		Scope: di.App,
-		Build: func() (emailService infrastructures.IEmailService , err error) {
+		Build: func() (emailService infrastructures.IEmailService, err error) {
 			return infrastructures.NewEmailService(&config.Conf.Email), nil
 		},
 	},

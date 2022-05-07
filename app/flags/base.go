@@ -1,13 +1,13 @@
 package flags
 
 import (
-	`flag`
+	"flag"
 )
 
 var (
 	Production *bool
-	Migrate *bool
-	Seed *bool
+	Migrate    *bool
+	Seed       *bool
 )
 
 func init() {

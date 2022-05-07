@@ -1,12 +1,13 @@
 package helpers
 
 import (
-	`crypto/hmac`
-	`crypto/md5`
-	`crypto/sha1`
-	`encoding/hex`
-	`golang.org/x/crypto/bcrypt`
-	`math/rand`
+	"crypto/hmac"
+	"crypto/md5"
+	"crypto/sha1"
+	"encoding/hex"
+	"math/rand"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Hash(password string) ([]byte, error) {
@@ -14,7 +15,7 @@ func Hash(password string) ([]byte, error) {
 }
 
 func RandomString(n int) string {
-	var letter = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	letter := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 	b := make([]rune, n)
 	for i := range b {
 		b[i] = letter[rand.Intn(len(letter))]

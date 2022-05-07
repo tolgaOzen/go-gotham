@@ -1,8 +1,9 @@
 package controllers
 
 import (
-	"github.com/labstack/echo/v4"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 
 	"gotham/models"
 	"gotham/policies"
@@ -32,7 +33,6 @@ type UserController struct {
 // @Failure 500 {object} viewModels.Message{}
 // @Router /v1/r/users [get]
 func (u UserController) Index(c echo.Context) (err error) {
-
 	auth := models.ConvertUser(c.Get("auth"))
 
 	// Request Bind And Validation
@@ -48,7 +48,7 @@ func (u UserController) Index(c echo.Context) (err error) {
 
 	var count int64
 	var users []models.User
-	users, count ,err = u.UserService.GetUsersWithPaginationAndOrder(&request.QueryParams.Pagination, &request.QueryParams.Order)
+	users, count, err = u.UserService.GetUsersWithPaginationAndOrder(&request.QueryParams.Pagination, &request.QueryParams.Order)
 	if err != nil {
 		return echo.ErrInternalServerError
 	}
@@ -79,7 +79,6 @@ func (u UserController) Index(c echo.Context) (err error) {
 // @Failure 500 {object} viewModels.Message{}
 // @Router /v1/r/users/:user [get]
 func (u UserController) Show(c echo.Context) (err error) {
-
 	auth := models.ConvertUser(c.Get("auth"))
 
 	// Request Bind And Validation
@@ -89,7 +88,7 @@ func (u UserController) Show(c echo.Context) (err error) {
 	if err := (&echo.DefaultBinder{}).BindPathParams(c, &request.PathParams); err != nil {
 		return err
 	}
-	
+
 	if err := (&echo.DefaultBinder{}).BindBody(c, &request.Body); err != nil {
 		return err
 	}

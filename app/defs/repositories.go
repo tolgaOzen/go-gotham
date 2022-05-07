@@ -11,7 +11,7 @@ var RepositoriesDefs = []dingo.Def{
 	{
 		Name:  "user-repository",
 		Scope: di.App,
-		Build: func(gormDatabase infrastructures.IGormDatabase) (repositories.IUserRepository ,error) {
+		Build: func(gormDatabase infrastructures.IGormDatabase) (repositories.IUserRepository, error) {
 			return &repositories.UserRepository{IGormDatabase: gormDatabase}, nil
 		},
 		Params: dingo.Params{

@@ -5,6 +5,6 @@ import (
 )
 
 type JwtCustomClaims struct {
-	AuthID   uint     `json:"auth_id"`
+	AuthID uint `json:"auth_id"`
 	jwt.StandardClaims
 }

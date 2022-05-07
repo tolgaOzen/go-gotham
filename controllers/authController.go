@@ -2,11 +2,12 @@ package controllers
 
 import (
 	"errors"
+	"net/http"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
-	"net/http"
-	"time"
 
 	"gotham/config"
 	"gotham/models"
@@ -36,7 +37,6 @@ type AuthController struct {
 // @Failure 500 {object} viewModels.Message{}
 // @Router /v1/login [post]
 func (a AuthController) Login(c echo.Context) (err error) {
-
 	// Request Bind And Validation
 	request := new(requests.LoginRequest)
 	if err := (&echo.DefaultBinder{}).BindBody(c, &request.Body); err != nil {
@@ -70,7 +70,7 @@ func (a AuthController) Login(c echo.Context) (err error) {
 	accessTokenExp := time.Now().Add(time.Hour * 720).Unix()
 
 	claims := &config.JwtCustomClaims{
-		AuthID:    user.ID,
+		AuthID: user.ID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: accessTokenExp,
 		},
@@ -86,8 +86,8 @@ func (a AuthController) Login(c echo.Context) (err error) {
 
 	// Response
 	return c.JSON(http.StatusOK, viewModels.SuccessResponse(viewModels.Login{
-		AccessToken: accessToken,
+		AccessToken:    accessToken,
 		AccessTokenExp: accessTokenExp,
-		User: user,
+		User:           user,
 	}))
 }

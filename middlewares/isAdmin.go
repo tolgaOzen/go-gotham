@@ -2,6 +2,7 @@ package GMiddleware
 
 import (
 	"errors"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -18,7 +19,6 @@ func (i IsAdmin) control(c echo.Context) *echo.HTTPError {
 	claims := u.Claims.(*config.JwtCustomClaims)
 
 	user, err := i.UserService.GetUserByID(claims.AuthID)
-
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return echo.NewHTTPError(404, "user could not be found")

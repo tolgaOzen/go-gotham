@@ -11,19 +11,17 @@ type LoginRequest struct {
 	/**
 	 * PathParams
 	 */
-	PathParams struct{
-	}
+	PathParams struct{}
 
 	/**
 	 * QueryParams
 	 */
-	QueryParams struct{
-	}
+	QueryParams struct{}
 
 	/**
-    * Body
-    */
-	Body struct{
+	 * Body
+	 */
+	Body struct {
 		Email    string `json:"email" form:"email" xml:"email"`
 		Password string `json:"password" form:"password" xml:"password"`
 	}

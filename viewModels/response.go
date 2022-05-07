@@ -25,4 +25,3 @@ func MResponse(message string) Message {
 func ValidationResponse(data interface{}) HTTPErrorResponse {
 	return HTTPErrorResponse{Errors: data}
 }
-

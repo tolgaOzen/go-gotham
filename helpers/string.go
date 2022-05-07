@@ -1,8 +1,8 @@
 package helpers
 
 import (
-	`fmt`
-	`regexp`
+	"fmt"
+	"regexp"
 )
 
 func ClearNonAlphanumericalCharacters(val string) (string, error) {

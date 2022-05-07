@@ -1,10 +1,12 @@
 package controllers
 
 import (
-	"github.com/labstack/echo/v4"
-	"gotham/viewModels"
 	"net/http"
 	"os"
+
+	"github.com/labstack/echo/v4"
+
+	"gotham/viewModels"
 )
 
 type ServerController struct{}
@@ -24,7 +26,7 @@ func (ServerController) Ping(c echo.Context) (err error) {
 // @Failure 500
 // @Router /status/version [get]
 func (ServerController) Version(c echo.Context) (err error) {
-	return c.JSON(http.StatusOK,map[string]interface{}{
+	return c.JSON(http.StatusOK, map[string]interface{}{
 		"version": os.Getenv("VERSION"),
-	} )
+	})
 }

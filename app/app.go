@@ -1,14 +1,15 @@
 package app
 
 import (
-	`fmt`
-	"github.com/sarulabs/di/v2"
-	`github.com/sarulabs/dingo/v4`
+	"fmt"
 	"log"
-	`os`
+	"os"
+
+	"github.com/sarulabs/di/v2"
+	"github.com/sarulabs/dingo/v4"
 
 	"gotham/app/container/dic"
-	`gotham/app/flags`
+	"gotham/app/flags"
 	"gotham/app/provider"
 )
 
@@ -40,4 +41,3 @@ func New() {
 	}
 	Application.Container = container
 }
-

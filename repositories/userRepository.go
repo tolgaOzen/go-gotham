@@ -17,7 +17,7 @@ type IUserRepository interface {
 	GetUserByEmail(email string) (models.User, error)
 
 	// Getter Options
-	GetUsersWithPaginationAndOrder(userIDs []uint, pagination scopes.GormPager, order scopes.GormOrderer) ([]models.User, error)
+	GetUsersWithPaginationAndOrder(pagination scopes.GormPager, order scopes.GormOrderer) (users []models.User, totalCount int64, err error)
 
 	// Create & Save & Updates & Delete
 	Create(user *models.User) (err error)
@@ -42,12 +42,12 @@ func (repository *UserRepository) Seed() (err error) {
 	for i := 0; i < 50; i++ {
 		hashedPassword, _ := helpers.Hash("password")
 		image := faker.Avatar().Url("jpg", 100, 200)
-		var user = models.User{
-			Name: faker.Name().FirstName(),
-			Email: faker.Internet().Email(),
+		user := models.User{
+			Name:     faker.Name().FirstName(),
+			Email:    faker.Internet().Email(),
 			Password: string(hashedPassword),
-			Image: &image ,
-			Admin: true,
+			Image:    &image,
+			Admin:    true,
 			Verified: true,
 		}
 
@@ -68,8 +68,8 @@ func (repository *UserRepository) Migrate() (err error) {
 	return repository.DB().AutoMigrate(models.User{})
 }
 
-func (repository *UserRepository) GetUsersWithPaginationAndOrder(userIDs []uint, pagination scopes.GormPager, order scopes.GormOrderer) (users []models.User, err error) {
-	err = repository.DB().Scopes(order.ToOrder(models.User{}.TableName(),"id", []interface{}{userIDs},"created_at", "updated_at")).Scopes(pagination.ToPaginate()).Find(&users).Error
+func (repository *UserRepository) GetUsersWithPaginationAndOrder(pagination scopes.GormPager, order scopes.GormOrderer) (users []models.User, totalCount int64, err error) {
+	err = repository.DB().Scopes(order.ToOrder(models.User{}.TableName(), "id", "id", "created_at", "updated_at")).Count(&totalCount).Scopes(pagination.ToPaginate()).Find(&users).Error
 	return
 }
 
@@ -113,4 +113,3 @@ func (repository *UserRepository) GetUserIDs() (userIDs []uint, err error) {
 	err = repository.DB().Model(&models.User{}).Pluck("id", &userIDs).Error
 	return
 }
-

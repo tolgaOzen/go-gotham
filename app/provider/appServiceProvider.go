@@ -44,4 +44,3 @@ func (p *Provider) Load() error {
 
 	return nil
 }
-

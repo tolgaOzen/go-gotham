@@ -22,7 +22,7 @@ var ServicesDefs = []dingo.Def{
 	{
 		Name:  "user-service",
 		Scope: di.App,
-		Build: func(repository repositories.IUserRepository) (s services.IUserService , err error) {
+		Build: func(repository repositories.IUserRepository) (s services.IUserService, err error) {
 			return &services.UserService{UserRepository: repository}, nil
 		},
 		Params: dingo.Params{

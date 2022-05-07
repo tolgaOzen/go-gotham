@@ -2,6 +2,7 @@ package rules
 
 import (
 	"errors"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 )
 

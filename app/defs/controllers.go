@@ -15,7 +15,7 @@ var ControllersDefs = []dingo.Def{
 		Build: func(service services.IUserService, userPolicy policies.IUserPolicy) (controllers.UserController, error) {
 			return controllers.UserController{
 				UserService: service,
-				UserPolicy: userPolicy,
+				UserPolicy:  userPolicy,
 			}, nil
 		},
 		Params: dingo.Params{

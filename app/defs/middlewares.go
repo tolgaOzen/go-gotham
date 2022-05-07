@@ -21,7 +21,7 @@ var MiddlewaresDefs = []dingo.Def{
 	{
 		Name:  "is-verified-middleware",
 		Scope: di.App,
-		Build: func(repository services.IUserService) (s GMiddleware.IsVerified , err error) {
+		Build: func(repository services.IUserService) (s GMiddleware.IsVerified, err error) {
 			return GMiddleware.IsVerified{UserService: repository}, nil
 		},
 		Params: dingo.Params{
@@ -31,7 +31,7 @@ var MiddlewaresDefs = []dingo.Def{
 	{
 		Name:  "auth-middleware",
 		Scope: di.App,
-		Build: func(repository services.IUserService) (s GMiddleware.Auth , err error) {
+		Build: func(repository services.IUserService) (s GMiddleware.Auth, err error) {
 			return GMiddleware.Auth{UserService: repository}, nil
 		},
 		Params: dingo.Params{

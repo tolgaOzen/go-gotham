@@ -2,6 +2,7 @@ package GMiddleware
 
 import (
 	"errors"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -9,7 +10,7 @@ import (
 	"gotham/services"
 )
 
-type IsVerified struct{
+type IsVerified struct {
 	UserService services.IUserService
 }
 

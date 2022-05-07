@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	`reflect`
+	"reflect"
 )
 
 func InArray(val interface{}, array interface{}) (exists bool) {

@@ -7,4 +7,3 @@ import (
 type IMailRenderer interface {
 	Render(data map[string]interface{}, to []string) (context email.Email, err error)
 }
-

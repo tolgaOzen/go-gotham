@@ -1,8 +1,8 @@
 package seeds
 
 import (
-	`gotham/app`
-	`gotham/app/flags`
+	"gotham/app"
+	"gotham/app/flags"
 )
 
 func Initialize() {

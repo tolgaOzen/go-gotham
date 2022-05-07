@@ -3,6 +3,7 @@ package mails
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/alecthomas/template"
 	"github.com/jordan-wright/email"
 )
@@ -24,7 +25,7 @@ type Welcome struct {
  */
 func NewWelcome(context email.Email) Welcome {
 	return Welcome{
-		Type: "-",
+		Type:    "-",
 		Context: context,
 	}
 }
@@ -34,7 +35,7 @@ func NewWelcome(context email.Email) Welcome {
  *
  * @return infrastructures.IEmailService
  */
-func (w Welcome) Render(data map[string]interface{}, to []string)  (context email.Email, err error) {
+func (w Welcome) Render(data map[string]interface{}, to []string) (context email.Email, err error) {
 	var t *template.Template
 	t, err = template.ParseFiles("views/welcome.html")
 	if err != nil {
@@ -42,9 +43,9 @@ func (w Welcome) Render(data map[string]interface{}, to []string)  (context emai
 	}
 	var body bytes.Buffer
 	err = t.Execute(&body, struct {
-		Url       interface{}
+		Url interface{}
 	}{
-		Url:       data["url"],
+		Url: data["url"],
 	})
 	w.Context.From = "Gotham <example@go-gotham.com>"
 	w.Context.To = to

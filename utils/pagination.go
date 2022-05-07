@@ -7,8 +7,8 @@ type IPagination interface {
 }
 
 type Pagination struct {
-	Page    int    `query:"page"`
-	Limit   int    `query:"limit"`
+	Page  int `query:"page"`
+	Limit int `query:"limit"`
 }
 
 func (p *Pagination) Get() *Pagination {
@@ -28,4 +28,3 @@ func (p *Pagination) GetLimit() int {
 	}
 	return p.Limit
 }
-

@@ -1,9 +1,10 @@
 package models
 
 import (
+	"time"
+
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"time"
 )
 
 type User struct {
