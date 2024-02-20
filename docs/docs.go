@@ -164,7 +164,7 @@ var doc = `{
                     {
                         "type": "string",
                         "description": "Bearer Token",
-                        "name": "token",
+                        "name": "Authorization",
                         "in": "header",
                         "required": true
                     }
@@ -212,7 +212,7 @@ var doc = `{
                 }
             }
         },
-        "/v1/r/users/:user": {
+        "/v1/r/users/{user}": {
             "get": {
                 "consumes": [
                     "application/json",
@@ -229,8 +229,15 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "1",
+                        "name": "user",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Bearer Token",
-                        "name": "token",
+                        "name": "Authorization",
                         "in": "header",
                         "required": true
                     }

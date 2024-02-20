@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/labstack/echo/v4"
-
 	"gotham/app"
 	"gotham/config"
 	"gotham/database/migrations"
@@ -16,5 +14,5 @@ func main() {
 	defer app.Application.Container.Delete()
 	migrations.Initialize()
 	seeds.Initialize()
-	routers.Route(echo.New())
+	routers.Initialize()
 }

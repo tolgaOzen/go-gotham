@@ -12,6 +12,7 @@ import (
 	middlewares "gotham/middlewares"
 	policies "gotham/policies"
 	repositories "gotham/repositories"
+	server "gotham/server"
 	services "gotham/services"
 )
 
@@ -162,6 +163,26 @@ func getDiDefs(provider dingo.Provider) []di.Def {
 				if !ok {
 					var eo infrastructures.IGormDatabasePool
 					return eo, errors.New("could not cast build function to func() (infrastructures.IGormDatabasePool, error)")
+				}
+				return b()
+			},
+			Close: func(obj interface{}) error {
+				return nil
+			},
+		},
+		{
+			Name:  "echo-server",
+			Scope: "app",
+			Build: func(ctn di.Container) (interface{}, error) {
+				d, err := provider.Get("echo-server")
+				if err != nil {
+					var eo *server.EchoServer
+					return eo, err
+				}
+				b, ok := d.Build.(func() (*server.EchoServer, error))
+				if !ok {
+					var eo *server.EchoServer
+					return eo, errors.New("could not cast build function to func() (*server.EchoServer, error)")
 				}
 				return b()
 			},

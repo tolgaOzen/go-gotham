@@ -1,10 +1,7 @@
 package routers
 
 import (
-	"context"
-	"os"
-	"os/signal"
-	"time"
+	"fmt"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -17,13 +14,13 @@ import (
 	GMiddleware "gotham/middlewares"
 )
 
-func Route(e *echo.Echo) {
+func GetRoute(e *echo.Echo) *echo.Echo {
 	docs.SwaggerInfo.Title = "Gotham API"
 	docs.SwaggerInfo.Description = "..."
 	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = "''"
+	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", config.Conf.Brand.ProjectHost, config.Conf.Port)
 	docs.SwaggerInfo.BasePath = "/"
-	docs.SwaggerInfo.Schemes = []string{"v1"}
+	//docs.SwaggerInfo.Schemes = []string{"v1"}
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -40,7 +37,8 @@ func Route(e *echo.Echo) {
 	// login
 	v1.POST("/login", app.Application.Container.GetAuthController().Login)
 
-	r := v1.Group("/restricted")
+	//r := v1.Group("/restricted")
+	r := v1.Group("/r")
 
 	c := middleware.JWTConfig{
 		Claims:     &config.JwtCustomClaims{},
@@ -54,19 +52,5 @@ func Route(e *echo.Echo) {
 	r.GET("/users/:user", app.Application.Container.GetUserController().Show, GMiddleware.Or(app.Application.Container.GetIsAdminMiddleware(), app.Application.Container.GetIsVerifiedMiddleware()))
 	r.GET("/users", app.Application.Container.GetUserController().Index)
 
-	// Start server
-	go func() {
-		if err := e.Start(":" + config.Conf.Port); err != nil {
-			e.Logger.Info("shutting down the server")
-		}
-	}()
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := e.Shutdown(ctx); err != nil {
-		e.Logger.Fatal(err)
-	}
+	return e
 }

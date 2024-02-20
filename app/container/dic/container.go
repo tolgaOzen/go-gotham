@@ -16,6 +16,7 @@ import (
 	middlewares "gotham/middlewares"
 	policies "gotham/policies"
 	repositories "gotham/repositories"
+	server "gotham/server"
 	services "gotham/services"
 )
 
@@ -23,9 +24,9 @@ import (
 // The function panics if the Container can not be retrieved.
 //
 // The interface can be :
-// - a *Container
-// - an *http.Request containing a *Container in its context.Context
-//   for the dingo.ContainerKey("dingo") key.
+//   - a *Container
+//   - an *http.Request containing a *Container in its context.Context
+//     for the dingo.ContainerKey("dingo") key.
 //
 // The function can be changed to match the needs of your application.
 var C = func(i interface{}) *Container {
@@ -509,6 +510,64 @@ func (c *Container) UnscopedGetDbPool() infrastructures.IGormDatabasePool {
 // If the container can not be retrieved, it panics.
 func DbPool(i interface{}) infrastructures.IGormDatabasePool {
 	return C(i).GetDbPool()
+}
+
+// SafeGetEchoServer works like SafeGet but only for EchoServer.
+// It does not return an interface but a *server.EchoServer.
+func (c *Container) SafeGetEchoServer() (*server.EchoServer, error) {
+	i, err := c.ctn.SafeGet("echo-server")
+	if err != nil {
+		var eo *server.EchoServer
+		return eo, err
+	}
+	o, ok := i.(*server.EchoServer)
+	if !ok {
+		return o, errors.New("could get 'echo-server' because the object could not be cast to *server.EchoServer")
+	}
+	return o, nil
+}
+
+// GetEchoServer is similar to SafeGetEchoServer but it does not return the error.
+// Instead it panics.
+func (c *Container) GetEchoServer() *server.EchoServer {
+	o, err := c.SafeGetEchoServer()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetEchoServer works like UnscopedSafeGet but only for EchoServer.
+// It does not return an interface but a *server.EchoServer.
+func (c *Container) UnscopedSafeGetEchoServer() (*server.EchoServer, error) {
+	i, err := c.ctn.UnscopedSafeGet("echo-server")
+	if err != nil {
+		var eo *server.EchoServer
+		return eo, err
+	}
+	o, ok := i.(*server.EchoServer)
+	if !ok {
+		return o, errors.New("could get 'echo-server' because the object could not be cast to *server.EchoServer")
+	}
+	return o, nil
+}
+
+// UnscopedGetEchoServer is similar to UnscopedSafeGetEchoServer but it does not return the error.
+// Instead it panics.
+func (c *Container) UnscopedGetEchoServer() *server.EchoServer {
+	o, err := c.UnscopedSafeGetEchoServer()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// EchoServer is similar to GetEchoServer.
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it applies the GetEchoServer method.
+// If the container can not be retrieved, it panics.
+func EchoServer(i interface{}) *server.EchoServer {
+	return C(i).GetEchoServer()
 }
 
 // SafeGetEmail works like SafeGet but only for Email.

@@ -1,8 +1,9 @@
 package provider
 
 import (
-	"github.com/sarulabs/dingo/v4"
 	"gotham/app/defs"
+
+	"github.com/sarulabs/dingo/v4"
 )
 
 type Provider struct {
@@ -39,6 +40,10 @@ func (p *Provider) Load() error {
 	}
 
 	if err := p.AddDefSlice(defs.PoliciesDefs); err != nil {
+		return err
+	}
+
+	if err := p.AddDefSlice(defs.ServersDefs); err != nil {
 		return err
 	}
 
