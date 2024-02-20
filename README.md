@@ -70,6 +70,11 @@ go run gotham -migrate
 go run gotham -seed
 ```
 
+- run echo server
+```
+go run gotham -server
+```
+
 ## FOLDER STRUCTURE
 
 ```
