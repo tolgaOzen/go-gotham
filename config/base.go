@@ -29,6 +29,7 @@ type Config struct {
 	Brand     struct {
 		ProjectName   string
 		ProjectUrl    string
+		ProjectHost   string
 		ProjectApiUrl string
 	}
 }
@@ -47,7 +48,13 @@ func Configurations() {
 		Brand: struct {
 			ProjectName   string
 			ProjectUrl    string
+			ProjectHost   string
 			ProjectApiUrl string
-		}{ProjectName: os.Getenv("PROJECT_NAME"), ProjectUrl: os.Getenv("PROJECT_URL"), ProjectApiUrl: os.Getenv("PROJECT_API_URL")},
+		}{
+			ProjectName:   os.Getenv("PROJECT_NAME"),
+			ProjectUrl:    os.Getenv("PROJECT_URL"),
+			ProjectHost:   os.Getenv("PROJECT_HOST"),
+			ProjectApiUrl: os.Getenv("PROJECT_API_URL"),
+		},
 	}
 }

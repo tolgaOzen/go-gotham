@@ -23,9 +23,9 @@ import (
 // The function panics if the Container can not be retrieved.
 //
 // The interface can be :
-// - a *Container
-// - an *http.Request containing a *Container in its context.Context
-//   for the dingo.ContainerKey("dingo") key.
+//   - a *Container
+//   - an *http.Request containing a *Container in its context.Context
+//     for the dingo.ContainerKey("dingo") key.
 //
 // The function can be changed to match the needs of your application.
 var C = func(i interface{}) *Container {

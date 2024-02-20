@@ -38,6 +38,21 @@ DB_PORT=3306
 DB_PASSWORD=strong_password
 ```
 
+## Infra
+
+```
+cp .env.example .env
+
+docker-compose up -d
+# wait for pg container is up
+# login from pgadmin and check database status
+
+make db-init
+
+go install github.com/swaggo/swag/cmd/swag@v1.7.0
+swag init -g main.go
+```
+
 ## Flags
 
 - prevents re-creating container methods from definitions
@@ -115,6 +130,20 @@ go run gotham -seed
 
   ### ViewModels
   ViewModels folder hosts all the structs under viewmodels namespace, viewmodels are model to be use as a response return of REST API call
+
+## Test
+
+```
+set -o allexport;
+source .env;
+set +o allexport;
+export ADMIN_EMAIL=$(echo "SELECT json_agg(users) FROM users WHERE id=1" |psql -AXqt | jq -r '.[].email')
+export ADMIN_TOKEN=$(curl -s -X POST "http://${BASE_URL}:${API_PORT}/v1/login" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"email\": \"${ADMIN_EMAIL}\", \"password\": \"password\", \"platform\": \"web\"}" | jq -r .data.access_token)
+
+curl -X GET "http://${BASE_URL}:${API_PORT}/v1/r/users" -H  "accept: application/json" -H  "Authorization: Bearer ${ADMIN_TOKEN}"
+curl -X GET "http://${BASE_URL}:${API_PORT}/v1/r/users/2" -H  "accept: application/json" -H  "Authorization: Bearer ${ADMIN_TOKEN}"
+```
+
   
 ## Author
 
