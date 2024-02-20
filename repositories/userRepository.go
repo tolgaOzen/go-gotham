@@ -69,7 +69,7 @@ func (repository *UserRepository) Migrate() (err error) {
 }
 
 func (repository *UserRepository) GetUsersWithPaginationAndOrder(pagination scopes.GormPager, order scopes.GormOrderer) (users []models.User, totalCount int64, err error) {
-	err = repository.DB().Scopes(order.ToOrder(models.User{}.TableName(), "id", "id", "created_at", "updated_at")).Count(&totalCount).Scopes(pagination.ToPaginate()).Find(&users).Error
+	err = repository.DB().Table(models.User{}.TableName()).Scopes(order.ToOrder(models.User{}.TableName(), "id", "id", "created_at", "updated_at")).Count(&totalCount).Scopes(pagination.ToPaginate()).Find(&users).Error
 	return
 }
 

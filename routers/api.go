@@ -2,6 +2,7 @@ package routers
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"time"
@@ -21,9 +22,9 @@ func Route(e *echo.Echo) {
 	docs.SwaggerInfo.Title = "Gotham API"
 	docs.SwaggerInfo.Description = "..."
 	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = "''"
+	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%s", config.Conf.Brand.ProjectHost, config.Conf.Port)
 	docs.SwaggerInfo.BasePath = "/"
-	docs.SwaggerInfo.Schemes = []string{"v1"}
+	//docs.SwaggerInfo.Schemes = []string{"v1"}
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -40,7 +41,8 @@ func Route(e *echo.Echo) {
 	// login
 	v1.POST("/login", app.Application.Container.GetAuthController().Login)
 
-	r := v1.Group("/restricted")
+	//r := v1.Group("/restricted")
+	r := v1.Group("/r")
 
 	c := middleware.JWTConfig{
 		Claims:     &config.JwtCustomClaims{},

@@ -26,7 +26,7 @@ type UserController struct {
 // @Accept  multipart/form-data
 // @Accept  application/x-www-form-urlencoded
 // @Produce json
-// @Param token header string true "Bearer Token"
+// @Param Authorization header string true "Bearer Token"
 // @Success 200 {object} viewModels.Paginator{data=[]models.User}
 // @Failure 400 {object} viewModels.Message{}
 // @Failure 401 {object} viewModels.Message{}
@@ -70,14 +70,15 @@ func (u UserController) Index(c echo.Context) (err error) {
 // @Accept  multipart/form-data
 // @Accept  application/x-www-form-urlencoded
 // @Produce json
-// @Param token header string true "Bearer Token"
+// @Param user path string true "1"
+// @Param Authorization header string true "Bearer Token"
 // @Success 200 {object} viewModels.HTTPSuccessResponse{data=models.User}
 // @Failure 404 {object} viewModels.Message{}
 // @Failure 401 {object} viewModels.Message{}
 // @Failure 400 {object} viewModels.Message{}
 // @Failure 403 {object} viewModels.Message{}
 // @Failure 500 {object} viewModels.Message{}
-// @Router /v1/r/users/:user [get]
+// @Router /v1/r/users/{user} [get]
 func (u UserController) Show(c echo.Context) (err error) {
 	auth := models.ConvertUser(c.Get("auth"))
 

@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  pg:
+    image: postgres:13.3
+    container_name: gotham_pg
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_USER: "admin"
+    ports:
+      - '35432:5432'
+
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: gotham_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@example.com"
+      PGADMIN_DEFAULT_PASSWORD: "password"
+    ports:
+      - '32082:80'
